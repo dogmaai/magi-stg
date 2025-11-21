@@ -1,0 +1,28 @@
+# Node
+node_modules/
+package-lock.json
+npm-debug.log
+
+# Backup
+*.backup
+*.bak
+
+# Temporary
+/tmp/
+*.tmp
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
