@@ -77,3 +77,36 @@ analysis-results/2025-11-21/AAPL_earnings_1763692848155.json
 
 ### 次: Cloud Run デプロイ
 
+
+---
+
+## 📋 LLM 役割管理
+
+### ファイル一覧
+
+**data/ フォルダ:**
+- `llm-roles.json` - 各 LLM の役割定義（JSON）
+- `system-prompts.json` - システムプロンプト集
+
+**ドキュメント:**
+- `LLM_ROLE_CLARIFICATION.md` - 役割混乱防止ガイド
+
+### 使用方法
+```javascript
+// llm-roles.json を読み込む
+import llmRoles from './docs/data/llm-roles.json';
+
+// BALTHASAR-2 の役割を確認
+console.log(llmRoles.llms.grok.specialty);
+// → ["トレンド予測", "イノベーション分析", ...]
+
+// システムプロンプトを取得
+import systemPrompts from './docs/data/system-prompts.json';
+const grokPrompt = systemPrompts.system_prompts.grok.prompt;
+```
+
+### 重要
+
+各 LLM の役割は **絶対に変更しないでください**。
+役割の明確さが MAGI System の強みです！
+
