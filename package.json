@@ -1,34 +1,17 @@
 {
-  "name": "@miroqu369/magi-stg",
+  "name": "magi-stg",
   "version": "1.0.0",
-  "description": "MAGI Storage Layer - Unified Cloud Storage, BigQuery, and Firestore API",
-  "main": "lib/index.js",
+  "description": "MAGI Specification Storage System",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "start": "node lib/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "magi",
-    "storage",
-    "gcp",
-    "cloud-storage",
-    "bigquery",
-    "firestore",
-    "analytics"
-  ],
-  "author": "Jun (miroqu369)",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/miroqu369/magi-stg.git"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.0.0",
-    "@google-cloud/bigquery": "^7.1.0",
-    "@google-cloud/firestore": "^7.0.0",
-    "dotenv": "^16.3.1"
-  },
-  "engines": {
-    "node": ">=18.x"
+    "@google-cloud/storage": "^7.7.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "google-auth-library": "^10.5.0"
   }
 }

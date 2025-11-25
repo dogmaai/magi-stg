@@ -1,0 +1,130 @@
+{
+  "magi_sys": {
+    "base_url": "https://magi-app-398890937507.run.app",
+    "port": 8080,
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "description": "ヘルスチェック"
+      },
+      {
+        "method": "GET",
+        "path": "/status",
+        "description": "5つのAPIキー確認"
+      },
+      {
+        "method": "POST",
+        "path": "/api/consensus",
+        "description": "質問応答（5 AI合議）",
+        "body": {
+          "prompt": "string",
+          "meta": {
+            "mode": "consensus|integration|synthesis"
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/grok/ping",
+        "description": "Grok接続確認"
+      }
+    ]
+  },
+  "magi_ac": {
+    "base_url": "https://magi-ac-398890937507.run.app",
+    "port": 8888,
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "description": "ヘルスチェック"
+      },
+      {
+        "method": "POST",
+        "path": "/api/analyze",
+        "description": "銘柄分析（4 AI判断）",
+        "body": {
+          "symbol": "string"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/analytics/latest/:symbol",
+        "description": "最新価格"
+      },
+      {
+        "method": "GET",
+        "path": "/api/analytics/history/:symbol",
+        "description": "価格履歴"
+      },
+      {
+        "method": "GET",
+        "path": "/api/analytics/stats/:symbol",
+        "description": "統計情報"
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/init-bigquery",
+        "description": "BigQuery初期化"
+      },
+      {
+        "method": "POST",
+        "path": "/api/document/analyze",
+        "description": "文書解析",
+        "body": {
+          "symbol": "string",
+          "document": "string"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/document/sentiment",
+        "description": "センチメント分析",
+        "body": {
+          "symbol": "string",
+          "text": "string"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/document/summarize",
+        "description": "レポート要約",
+        "body": {
+          "symbol": "string",
+          "document": "string"
+        }
+      }
+    ]
+  },
+  "magi_stg": {
+    "base_url": "https://magi-stg-398890937507.run.app",
+    "port": 8090,
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "description": "ヘルスチェック"
+      },
+      {
+        "method": "GET",
+        "path": "/api/spec/list",
+        "description": "仕様書一覧"
+      },
+      {
+        "method": "GET",
+        "path": "/api/spec/:category",
+        "description": "仕様書取得"
+      },
+      {
+        "method": "POST",
+        "path": "/api/spec/upload",
+        "description": "仕様書アップロード",
+        "body": {
+          "category": "string",
+          "content": "string"
+        }
+      }
+    ]
+  }
+}

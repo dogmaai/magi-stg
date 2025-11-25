@@ -1,0 +1,77 @@
+{
+  "magi_sys": {
+    "balthasar": {
+      "provider": "xai",
+      "model": "grok-2-latest",
+      "temperature": 0.5,
+      "role": "創造的・革新的分析",
+      "specialty": "トレンド予測、イノベーション分析"
+    },
+    "melchior": {
+      "provider": "google",
+      "model": "gemini-2.0-flash-exp",
+      "temperature": 0.2,
+      "role": "論理的・科学的分析",
+      "specialty": "データ分析、科学的検証"
+    },
+    "casper": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "temperature": 0.4,
+      "role": "人間的・感情的分析",
+      "specialty": "倫理判断、長期的影響分析"
+    },
+    "mary": {
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "temperature": 0.3,
+      "role": "統合的・バランス分析 + Judge",
+      "specialty": "意見統合、コンセンサス形成",
+      "special": "最終判断・統合を担当"
+    },
+    "sophia": {
+      "provider": "mistral",
+      "model": "mistral-large-latest",
+      "temperature": 0.3,
+      "role": "実践的・戦略的分析",
+      "specialty": "戦略立案、リスク評価"
+    }
+  },
+  "magi_ac": {
+    "unit_b2": {
+      "provider": "xai",
+      "model": "grok-2-latest",
+      "role": "創造的トレンド分析",
+      "output": "BUY/HOLD/SELL + 信頼度 + 理由"
+    },
+    "unit_m1": {
+      "provider": "google",
+      "model": "gemini-2.0-flash-exp",
+      "role": "論理的数値分析",
+      "output": "BUY/HOLD/SELL + 信頼度 + 理由"
+    },
+    "unit_c3": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "role": "人間的価値分析",
+      "output": "BUY/HOLD/SELL + 信頼度 + 理由"
+    },
+    "unit_r4": {
+      "provider": "mistral",
+      "model": "mistral-large-latest",
+      "role": "実践的リスク分析",
+      "output": "BUY/HOLD/SELL + 信頼度 + 理由"
+    },
+    "isabel": {
+      "provider": "cohere",
+      "model": "command-r-plus",
+      "role": "文書解析・情報抽出",
+      "functions": [
+        "決算書解析",
+        "センチメント分析",
+        "長文要約",
+        "RAG"
+      ]
+    }
+  }
+}
