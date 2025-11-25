@@ -1,28 +1,22 @@
-# Node
+# Dependencies
 node_modules/
 package-lock.json
-npm-debug.log
-
-# Backup
-*.backup
-*.bak
-
-# Temporary
-/tmp/
-*.tmp
 
 # Environment
 .env
 .env.local
 
-# IDE
-.vscode/
-.idea/
+# Logs
+*.log
+npm-debug.log*
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-logs/
+# Editor
+.vscode/
+.idea/
+
+# Cloud Shell
+.theia/
