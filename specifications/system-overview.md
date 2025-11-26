@@ -1,34 +1,86 @@
-# MAGI System Overview v4.0
+# MAGI System v4.0 システム全体概要
 
-## システム全体構成
+**更新日**: 2025-11-26
+**ステータス**: 本番稼働中
+**完成度**: 100%
+
+## システム構成
 ```
-MAGI Ecosystem
-├─ magi-sys: 質問応答システム (5 AI合議)
-├─ magi-ac: 証券分析システム (4 AI判断 + 1 AI文書解析)
-└─ magi-stg: 仕様書管理システム
+┌─────────────────────────────────────────────────────────┐
+│                    MAGI System v4.0                      │
+│               Multi-AI Consensus Platform                │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  magi-ui      magi-sys      magi-ac       magi-moni     │
+│  (UI)        (質問応答)    (証券分析)    (監視)         │
+│                                                          │
+│                    magi-stg (仕様書管理)                 │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## デプロイ情報
+## Cloud Run サービス一覧
 
-- **Region**: asia-northeast1
-- **Project**: screen-share-459802
-- **Platform**: Google Cloud Run (serverless)
+| サービス | ポート | 機能 | AI数 |
+|---------|-------|------|------|
+| magi-ac | 8888 | 証券分析・投資判断 | 5 |
+| magi-app | 8080 | 質問応答・合議 | 5 |
+| magi-stg | 8080 | 仕様書管理 | 0 |
+| magi-ui | 8080 | ユーザーインターフェース | 0 |
+| magi-moni | 8080 | システム監視 | 0 |
 
-## システムURL
+## AI統合状況
 
-- magi-sys: https://magi-app-398890937507.run.app
-- magi-ac: https://magi-ac-398890937507.run.app
-- magi-stg: https://magi-stg-398890937507.run.app
+### magi-app (質問応答) - 5AI
+| ユニット | AI | 役割 |
+|---------|-----|------|
+| BALTHASAR-2 | Grok | 創造的分析 |
+| MELCHIOR-1 | Gemini | 論理的分析 |
+| CASPER-3 | Claude | 人間的分析 |
+| MARY-4 | GPT-4 | 統合的分析(Judge) |
+| SOPHIA-5 | Mistral | 実践的分析 |
+
+### magi-ac (証券分析) - 5AI
+| ユニット | AI | 役割 |
+|---------|-----|------|
+| Unit-B2 | Grok | 創造的トレンド分析 |
+| Unit-M1 | Gemini | 論理的数値分析 |
+| Unit-C3 | Claude | 人間的価値分析 |
+| Unit-R4 | Mistral | 実践的リスク分析 |
+| ISABEL | Cohere | 文書解析・情報抽出 |
+
+## データ基盤
+
+### BigQuery (magi_ac)
+- analyses: 4AI合議結果
+- ai_judgments: 個別AI判断
+- document_analyses: Cohere解析結果
+
+### Cloud Storage
+- gs://magi-documents/: 文書テキスト保存
+
+### Secret Manager
+- XAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY
+- MISTRAL_API_KEY, OPENAI_API_KEY, COHERE_API_KEY
 
 ## 認証方式
 
-- Cloud Run: Identity Token (gcloud auth print-identity-token)
-- Org Policy: allUsers 禁止 (--no-allow-unauthenticated)
-- Local: Cloud Shell Web Preview (localhost:8080/8888/8090)
+- **組織ポリシー**: allUsers禁止
+- **アクセス方法**: Identity Token必須
+- **取得**: `gcloud auth print-identity-token`
 
-## 重要な運用ルール
+## コスト設定
 
-1. package.json の "start" は必ず "node server.js" (bootstrap.jsではない)
-2. デプロイ前に既存プロセスを終了 (pkill -f "npm start")
-3. ポート使用: magi-sys=8080, magi-ac=8888, magi-stg=8090
-4. Secret Manager経由でAPIキー管理
+| 設定 | 値 | 月額目安 |
+|-----|-----|---------|
+| min-instances | 0 | $5以下 |
+| memory | 1Gi | - |
+| region | asia-northeast1 | - |
+
+## 関連ドキュメント
+
+- magi-ac-spec.md: 証券分析詳細
+- magi-sys-spec.md: 質問応答詳細
+- magi-moni-spec.md: 監視詳細
+- api-endpoints.json: API一覧
+- ai-models-config.json: AIモデル設定
