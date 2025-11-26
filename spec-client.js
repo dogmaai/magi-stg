@@ -1,6 +1,6 @@
 import { GoogleAuth } from 'google-auth-library';
 
-const MAGI_STG_URL = process.env.MAGI_STG_URL || 'https://magi-stg-dtrah63zyq-an.a.run.app';
+const MAGI_STG_URL = process.env.MAGI_STG_URL || 'https://magi-stg-398890937507.asia-northeast1.run.app';
 const auth = new GoogleAuth();
 
 // Identity Token取得
