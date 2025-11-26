@@ -1,16 +1,10 @@
 import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import OpenAI from 'openai';
 import Groq from 'groq-sdk';
 import MistralClient from '@mistralai/mistralai';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const SPEC_DIR = path.join(__dirname, 'specifications');
+import { loadSpecifications, enhancePromptWithSpec } from './spec-client.js';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -20,146 +14,27 @@ let specifications = null;
 
 // 起動時に仕様書を読み込み
 (async () => {
-  specifications = loadLocalSpecifications();
+  specifications = await loadSpecifications();
   if (specifications) {
     console.log('✅ Specifications loaded and cached');
   } else {
-    console.warn('⚠️  Failed to load specifications');
+    console.warn('⚠️  Failed to load specifications, continuing without spec context');
   }
 })();
 
-// ローカルファイルから仕様書読み込み
-function loadLocalSpecifications() {
-  try {
-    const specs = {
-      systemOverview: fs.readFileSync(path.join(SPEC_DIR, 'system-overview.md'), 'utf-8'),
-      magiSysSpec: fs.readFileSync(path.join(SPEC_DIR, 'magi-sys-spec.md'), 'utf-8'),
-      magiAcSpec: fs.readFileSync(path.join(SPEC_DIR, 'magi-ac-spec.md'), 'utf-8'),
-      aiModels: JSON.parse(fs.readFileSync(path.join(SPEC_DIR, 'ai-models-config.json'), 'utf-8'))
-    };
-    return specs;
-  } catch (error) {
-    console.error('Failed to load specifications:', error.message);
-    return null;
-  }
-}
-
-// AIプロンプトに仕様書を挿入
-function enhancePromptWithSpec(prompt, specs) {
-  if (!specs || !specs.magiSysSpec) {
-    return prompt;
-  }
-  return `
-# MAGI System Context (Reference Only)
-${specs.magiSysSpec}
-
----
-# User Question:
-${prompt}
-`;
-}
-
 app.use(express.json());
 app.use(express.static('public'));
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 仕様書配信API（新規追加）
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-// 仕様書一覧取得
-app.get('/api/specs', (req, res) => {
-  try {
-    const files = fs.readdirSync(SPEC_DIR);
-    const specs = files.map(file => ({
-      filename: file,
-      path: `/api/spec/${file}`
-    }));
-    res.json({ 
-      success: true, 
-      count: specs.length,
-      specifications: specs 
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 個別仕様書取得
-app.get('/api/spec/:filename', (req, res) => {
-  try {
-    const { filename } = req.params;
-    const filePath = path.join(SPEC_DIR, filename);
-    
-    // セキュリティチェック（ディレクトリトラバーサル防止）
-    if (!filePath.startsWith(SPEC_DIR)) {
-      return res.status(400).json({ error: 'Invalid filename' });
-    }
-    
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'Specification not found' });
-    }
-    
-    const content = fs.readFileSync(filePath, 'utf-8');
-    res.json({
-      success: true,
-      filename,
-      content,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 全仕様書を一括取得
-app.get('/api/specs/all', (req, res) => {
-  try {
-    const files = fs.readdirSync(SPEC_DIR);
-    const allSpecs = {};
-    
-    files.forEach(file => {
-      const content = fs.readFileSync(path.join(SPEC_DIR, file), 'utf-8');
-      allSpecs[file] = file.endsWith('.json') ? JSON.parse(content) : content;
-    });
-    
-    res.json({
-      success: true,
-      count: files.length,
-      specifications: allSpecs,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 既存エンドポイント
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // ヘルスチェック
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy',
-    service: 'magi-stg',
     specifications_loaded: specifications !== null,
     timestamp: new Date().toISOString()
   });
 });
 
-// ステータス確認
-app.get('/status', (req, res) => {
-  res.json({
-    grok: !!process.env.XAI_API_KEY,
-    gemini: !!process.env.GEMINI_API_KEY,
-    claude: !!process.env.ANTHROPIC_API_KEY,
-    openai: !!process.env.OPENAI_API_KEY,
-    mistral: !!process.env.MISTRAL_API_KEY,
-    specifications: specifications !== null
-  });
-});
-
-// コンセンサスエンドポイント
+// 既存のコンセンサスエンドポイントを修正
 app.post('/api/consensus', async (req, res) => {
   try {
     const { prompt, meta = {} } = req.body;
@@ -168,12 +43,14 @@ app.post('/api/consensus', async (req, res) => {
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
+    // 仕様書をプロンプトに挿入
     const enhancedPrompt = specifications 
       ? enhancePromptWithSpec(prompt, specifications)
       : prompt;
 
     console.log('📝 Processing consensus request with spec context:', !!specifications);
 
+    // 5つのAIを並列実行
     const startTime = Date.now();
     
     const [balthasarResponse, melchiorResponse, casperResponse, maryResponse, sophiaResponse] = 
@@ -187,6 +64,7 @@ app.post('/api/consensus', async (req, res) => {
 
     const responseTime = Date.now() - startTime;
 
+    // レスポンス集約
     const responses = {
       balthasar: balthasarResponse.status === 'fulfilled' ? balthasarResponse.value : null,
       melchior: melchiorResponse.status === 'fulfilled' ? melchiorResponse.value : null,
@@ -197,6 +75,7 @@ app.post('/api/consensus', async (req, res) => {
 
     const validResponses = Object.values(responses).filter(r => r !== null).length;
 
+    // モードに応じた統合
     let final;
     const mode = meta.mode || 'consensus';
     
@@ -229,10 +108,7 @@ app.post('/api/consensus', async (req, res) => {
   }
 });
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// AI呼び出し関数
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+// AI呼び出し関数（省略版 - 既存コードを使用）
 async function callGrok(prompt) {
   const groq = new Groq({
     apiKey: process.env.XAI_API_KEY,
@@ -289,7 +165,7 @@ async function callMistral(prompt) {
 
 async function integrateResponses(responses, originalPrompt) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const integrationPrompt = `Integrate these 5 AI responses into a unified answer: ${JSON.stringify(responses)}`;
+  const integrationPrompt = `Integrate these 5 AI responses: ${JSON.stringify(responses)}`;
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: integrationPrompt }],
@@ -300,7 +176,7 @@ async function integrateResponses(responses, originalPrompt) {
 
 async function synthesizeResponses(responses, originalPrompt) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const synthesisPrompt = `Create emergent insight from these diverse perspectives: ${JSON.stringify(responses)}`;
+  const synthesisPrompt = `Create emergent insight from: ${JSON.stringify(responses)}`;
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: synthesisPrompt }],
@@ -315,7 +191,17 @@ function findConsensus(responses) {
   return validResponses.reduce((a, b) => a.length > b.length ? a : b);
 }
 
+app.get('/status', (req, res) => {
+  res.json({
+    grok: !!process.env.XAI_API_KEY,
+    gemini: !!process.env.GEMINI_API_KEY,
+    claude: !!process.env.ANTHROPIC_API_KEY,
+    openai: !!process.env.OPENAI_API_KEY,
+    mistral: !!process.env.MISTRAL_API_KEY,
+    specifications: specifications !== null
+  });
+});
+
 app.listen(PORT, () => {
-  console.log(`✅ MAGI-STG running on port ${PORT}`);
-  console.log(`📚 Spec API: GET /api/specs, GET /api/spec/:filename`);
+  console.log(`✅ MAGI System running on port ${PORT}`);
 });
