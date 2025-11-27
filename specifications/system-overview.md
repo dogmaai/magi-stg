@@ -64,3 +64,4 @@
 - **インフラ**: Google Cloud Run
 - **認証**: google-auth-library
 - **データ**: BigQuery, Cloud Storage
+
