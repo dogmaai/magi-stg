@@ -315,7 +315,48 @@ function findConsensus(responses) {
   return validResponses.reduce((a, b) => a.length > b.length ? a : b);
 }
 
-app.listen(PORT, () => {
-  console.log(`✅ MAGI-STG running on port ${PORT}`);
-  console.log(`📚 Spec API: GET /api/specs, GET /api/spec/:filename`);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 公開API（認証不要 - Claude参照用）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+app.get('/public/specs', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  try {
+    const files = fs.readdirSync(SPEC_DIR);
+    const allSpecs = {};
+    files.forEach(file => {
+      const content = fs.readFileSync(path.join(SPEC_DIR, file), 'utf-8');
+      allSpecs[file] = file.endsWith('.json') ? JSON.parse(content) : content;
+    });
+    res.json({
+      success: true,
+      source: 'magi-stg',
+      version: '4.0',
+      count: files.length,
+      specifications: allSpecs,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/public/overview', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  try {
+    const overview = fs.readFileSync(path.join(SPEC_DIR, 'system-overview.md'), 'utf-8');
+    res.json({
+      success: true,
+      content: overview,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.listen(PORT, function() {
+  console.log('MAGI-STG running on port ' + PORT);
+  console.log('Public API: GET /public/specs, GET /public/overview');
 });
