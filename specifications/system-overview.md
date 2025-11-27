@@ -1,86 +1,66 @@
-# MAGI System v4.0 システム全体概要
-
-**更新日**: 2025-11-26
-**ステータス**: 本番稼働中
-**完成度**: 100%
+# MAGI System v4.0 全体概要
 
 ## システム構成
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    MAGI System v4.0                      │
-│               Multi-AI Consensus Platform                │
 ├─────────────────────────────────────────────────────────┤
 │                                                          │
-│  magi-ui      magi-sys      magi-ac       magi-moni     │
-│  (UI)        (質問応答)    (証券分析)    (監視)         │
+│  ┌──────────────┐                                       │
+│  │   magi-ui    │ ← 統合UI（ハンバーガーメニュー）      │
+│  │   :8080      │                                       │
+│  └──────┬───────┘                                       │
+│         │ Identity Token認証                            │
+│    ┌────┴────┐                                          │
+│    ▼         ▼                                          │
+│  ┌──────┐  ┌──────┐                                    │
+│  │magi- │  │magi- │                                    │
+│  │sys   │  │ac    │                                    │
+│  │:8080 │  │:8888 │                                    │
+│  └──────┘  └──────┘                                    │
+│  4AI合議   4AI分析                                      │
 │                                                          │
-│                    magi-stg (仕様書管理)                 │
+│  ┌──────────────┐                                       │
+│  │   magi-stg   │ ← 仕様書管理                         │
+│  └──────────────┘                                       │
 │                                                          │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Cloud Run サービス一覧
+## サービス一覧
 
-| サービス | ポート | 機能 | AI数 |
-|---------|-------|------|------|
-| magi-ac | 8888 | 証券分析・投資判断 | 5 |
-| magi-app | 8080 | 質問応答・合議 | 5 |
-| magi-stg | 8080 | 仕様書管理 | 0 |
-| magi-ui | 8080 | ユーザーインターフェース | 0 |
-| magi-moni | 8080 | システム監視 | 0 |
+| サービス | 目的 | URL |
+|----------|------|-----|
+| magi-ui | 統合UI | https://magi-ui-398890937507.asia-northeast1.run.app |
+| magi-sys | 質問応答 | https://magi-app-398890937507.asia-northeast1.run.app |
+| magi-ac | 株価分析 | https://magi-ac-398890937507.asia-northeast1.run.app |
+| magi-stg | 仕様書管理 | https://magi-stg-dtrah63zyq-an.a.run.app |
 
-## AI統合状況
+## 機能概要
 
-### magi-app (質問応答) - 5AI
-| ユニット | AI | 役割 |
-|---------|-----|------|
-| BALTHASAR-2 | Grok | 創造的分析 |
-| MELCHIOR-1 | Gemini | 論理的分析 |
-| CASPER-3 | Claude | 人間的分析 |
-| MARY-4 | GPT-4 | 統合的分析(Judge) |
-| SOPHIA-5 | Mistral | 実践的分析 |
+### 質問応答 (magi-sys)
+- 4つのAI（Grok, Gemini, Claude, GPT-4）が並列回答
+- 合議による最終回答生成
 
-### magi-ac (証券分析) - 5AI
-| ユニット | AI | 役割 |
-|---------|-----|------|
-| Unit-B2 | Grok | 創造的トレンド分析 |
-| Unit-M1 | Gemini | 論理的数値分析 |
-| Unit-C3 | Claude | 人間的価値分析 |
-| Unit-R4 | Mistral | 実践的リスク分析 |
-| ISABEL | Cohere | 文書解析・情報抽出 |
+### 株価分析 (magi-ac)
+- Yahoo Finance からリアルタイムデータ取得
+- 4つのAI（Grok, Gemini, Claude, Mistral）が分析
+- BUY/HOLD/SELL の投資推奨
 
-## データ基盤
-
-### BigQuery (magi_ac)
-- analyses: 4AI合議結果
-- ai_judgments: 個別AI判断
-- document_analyses: Cohere解析結果
-
-### Cloud Storage
-- gs://magi-documents/: 文書テキスト保存
-
-### Secret Manager
-- XAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY
-- MISTRAL_API_KEY, OPENAI_API_KEY, COHERE_API_KEY
+### 文書解析 (Cohere ISABEL)
+- センチメント分析
+- レポート要約
+- 財務データ抽出
 
 ## 認証方式
 
-- **組織ポリシー**: allUsers禁止
-- **アクセス方法**: Identity Token必須
-- **取得**: `gcloud auth print-identity-token`
+- Cloud Run サービス間: Identity Token
+- IAM: serviceAccount に roles/run.invoker 付与
 
-## コスト設定
+## 技術スタック
 
-| 設定 | 値 | 月額目安 |
-|-----|-----|---------|
-| min-instances | 0 | $5以下 |
-| memory | 1Gi | - |
-| region | asia-northeast1 | - |
-
-## 関連ドキュメント
-
-- magi-ac-spec.md: 証券分析詳細
-- magi-sys-spec.md: 質問応答詳細
-- magi-moni-spec.md: 監視詳細
-- api-endpoints.json: API一覧
-- ai-models-config.json: AIモデル設定
+- **バックエンド**: Node.js, Express
+- **フロントエンド**: React 18
+- **インフラ**: Google Cloud Run
+- **認証**: google-auth-library
+- **データ**: BigQuery, Cloud Storage

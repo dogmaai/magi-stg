@@ -3,8 +3,9 @@
 ## 概要
 
 - **目的**: 質問応答・合議システム
-- **AI数**: 5つ
+- **AI数**: 4つ（実稼働）
 - **デプロイ**: Cloud Run
+- **URL**: https://magi-app-398890937507.asia-northeast1.run.app
 - **ポート**: 8080
 
 ## AI構成
@@ -28,51 +29,35 @@
 - **得意**: 倫理判断、長期的影響分析
 
 ### MARY-4 (GPT-4 / OpenAI)
-- **役割**: 統合的・バランス分析 + Judge (裁定者)
+- **役割**: 統合的・バランス分析
 - **Model**: gpt-4o-mini
 - **Temperature**: 0.3
 - **得意**: 意見統合、コンセンサス形成
-- **特別**: 最終判断・統合を担当
-
-### SOPHIA-5 (Mistral / Mistral AI)
-- **役割**: 実践的・戦略的分析
-- **Model**: mistral-large-latest
-- **Temperature**: 0.3
-- **得意**: 戦略立案、リスク評価
-
-## 合議モード
-
-### 1. Consensus Mode (多数決)
-5つのAIの意見 → 最も多い回答を採用
-
-### 2. Integration Mode (統合)
-5つのAIの意見 → GPT-4が統合 → 最終回答
-
-### 3. Synthesis Mode (創発)
-5つのAIの意見 → 新しい洞察を創造 → 創発的回答
 
 ## APIエンドポイント
 
-- GET  /health - ヘルスチェック
-- GET  /status - 5つのAPIキー確認
-- POST /api/consensus - 質問応答（5 AI合議）
-- POST /api/grok/ping - Grok接続確認
+| メソッド | パス | 説明 |
+|----------|------|------|
+| GET | /health | ヘルスチェック |
+| GET | /status | AI設定状態確認 |
+| POST | /api/consensus | 質問応答（4AI合議） |
 
-## 環境変数
-```
-PORT=8080
-ANTHROPIC_MODEL=claude-sonnet-4-20250514
-GEMINI_MODEL=gemini-2.0-flash-exp
-XAI_MODEL=grok-2-latest
-OPENAI_MODEL=gpt-4o-mini
-MISTRAL_MODEL=mistral-large-latest
+## レスポンス形式
+```json
+{
+  "final": "最終回答",
+  "balthasar": "Grokの回答",
+  "melchior": "Geminiの回答",
+  "casper": "Claudeの回答",
+  "mary": "GPT-4の回答",
+  "metrics": {
+    "ms": 2500,
+    "valid": 4
+  }
+}
 ```
 
-## Secret Manager
-```
-OPENAI_API_KEY
-GEMINI_API_KEY
-ANTHROPIC_API_KEY
-XAI_API_KEY
-MISTRAL_API_KEY
-```
+## 認証
+
+- Cloud Run: Identity Token 必須
+- IAM: roles/run.invoker
