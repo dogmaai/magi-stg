@@ -239,3 +239,277 @@ curl -H "Authorization: Bearer $TOKEN" \
 | manipulation_signals | 操作シグナル履歴 |
 | institutional_positions | 機関投資家ポジション |
 
+
+---
+
+## AI株価予測機能 (APP - AI Price Predictor)
+
+### 概要
+4AIによる株価予測機能。短期から長期まで対応。
+
+### エンドポイント
+
+| Method | Endpoint | 説明 |
+|--------|----------|------|
+| POST | /api/predict | 株価予測 |
+
+### リクエスト
+```json
+{
+  "symbol": "AAPL",
+  "horizon": "1day",
+  "enableAI": true,
+  "saveToDB": true
+}
+```
+
+### 予測期間 (horizon)
+
+| 値 | 期間 | 重視データ |
+|----|------|-----------|
+| 1day | 1日後 | テクニカル指標、機関動向 |
+| 1week | 1週間後 | テクニカル、センチメント |
+| 1month | 1ヶ月後 | テクニカル、決算予想 |
+| 3months | 3ヶ月後 | 決算、セクタートレンド、マクロ |
+| 2years | 2年後 | ファンダメンタルズ、成長率、競争優位性 |
+
+### レスポンス例
+```json
+{
+  "symbol": "AAPL",
+  "horizon": "3months",
+  "current_price": 136.78,
+  "prediction": {
+    "predicted_price": 155.00,
+    "direction": "UP",
+    "confidence": 0.72,
+    "price_range": { "low": 148.00, "high": 162.00 }
+  },
+  "ai_predictions": {
+    "grok": { "predicted_price": 158.00, "direction": "UP", "confidence": 0.75, "reasoning": "..." },
+    "gemini": { "predicted_price": 152.00, "direction": "UP", "confidence": 0.70, "reasoning": "..." },
+    "claude": { "predicted_price": 156.00, "direction": "UP", "confidence": 0.73, "reasoning": "..." },
+    "mistral": { "predicted_price": 154.00, "direction": "UP", "confidence": 0.68, "reasoning": "..." }
+  },
+  "factors": [
+    "テクニカル: RSI 55（中立）",
+    "機関動向: やや売り圧力",
+    "ファンダメンタルズ: 成長継続"
+  ]
+}
+```
+
+### BigQuery保存
+
+| テーブル | 内容 |
+|---------|------|
+| predictions | 予測結果 |
+| prediction_accuracy | 予測精度（事後検証） |
+
+### 実装ステータス
+- [ ] 未実装（設計完了）
+
+
+---
+
+## AI株価予測機能 (APP - AI Price Predictor)
+
+### 概要
+4AIによる株価予測機能。短期から長期まで対応。
+
+### エンドポイント
+
+| Method | Endpoint | 説明 |
+|--------|----------|------|
+| POST | /api/predict | 株価予測 |
+
+### リクエスト
+```json
+{
+  "symbol": "AAPL",
+  "horizon": "1day",
+  "enableAI": true,
+  "saveToDB": true
+}
+```
+
+### 予測期間 (horizon)
+
+| 値 | 期間 | 重視データ |
+|----|------|-----------|
+| 1day | 1日後 | テクニカル指標、機関動向 |
+| 1week | 1週間後 | テクニカル、センチメント |
+| 1month | 1ヶ月後 | テクニカル、決算予想 |
+| 3months | 3ヶ月後 | 決算、セクタートレンド、マクロ |
+| 2years | 2年後 | ファンダメンタルズ、成長率、競争優位性 |
+
+### レスポンス例
+```json
+{
+  "symbol": "AAPL",
+  "horizon": "3months",
+  "current_price": 136.78,
+  "prediction": {
+    "predicted_price": 155.00,
+    "direction": "UP",
+    "confidence": 0.72,
+    "price_range": { "low": 148.00, "high": 162.00 }
+  },
+  "ai_predictions": {
+    "grok": { "predicted_price": 158.00, "direction": "UP", "confidence": 0.75, "reasoning": "..." },
+    "gemini": { "predicted_price": 152.00, "direction": "UP", "confidence": 0.70, "reasoning": "..." },
+    "claude": { "predicted_price": 156.00, "direction": "UP", "confidence": 0.73, "reasoning": "..." },
+    "mistral": { "predicted_price": 154.00, "direction": "UP", "confidence": 0.68, "reasoning": "..." }
+  },
+  "factors": [
+    "テクニカル: RSI 55（中立）",
+    "機関動向: やや売り圧力",
+    "ファンダメンタルズ: 成長継続"
+  ]
+}
+```
+
+### BigQuery保存
+
+| テーブル | 内容 |
+|---------|------|
+| predictions | 予測結果 |
+| prediction_accuracy | 予測精度（事後検証） |
+
+### 実装ステータス
+- [ ] 未実装（設計完了）
+
+
+---
+
+## AI株価予測機能 (APP - AI Price Predictor)
+
+### 概要
+4AIによる株価予測機能。短期から長期まで対応。
+
+### エンドポイント
+
+| Method | Endpoint | 説明 |
+|--------|----------|------|
+| POST | /api/predict | 株価予測 |
+
+### リクエスト
+```json
+{
+  "symbol": "AAPL",
+  "horizon": "1day",
+  "enableAI": true,
+  "saveToDB": true
+}
+```
+
+### 予測期間 (horizon)
+
+| 値 | 期間 | 重視データ |
+|----|------|-----------|
+| 1day | 1日後 | テクニカル指標、機関動向 |
+| 1week | 1週間後 | テクニカル、センチメント |
+| 1month | 1ヶ月後 | テクニカル、決算予想 |
+| 3months | 3ヶ月後 | 決算、セクタートレンド、マクロ |
+| 2years | 2年後 | ファンダメンタルズ、成長率、競争優位性 |
+
+### レスポンス例
+```json
+{
+  "symbol": "AAPL",
+  "horizon": "3months",
+  "current_price": 136.78,
+  "prediction": {
+    "predicted_price": 155.00,
+    "direction": "UP",
+    "confidence": 0.72,
+    "price_range": { "low": 148.00, "high": 162.00 }
+  },
+  "ai_predictions": {
+    "grok": { "predicted_price": 158.00, "direction": "UP", "confidence": 0.75, "reasoning": "..." },
+    "gemini": { "predicted_price": 152.00, "direction": "UP", "confidence": 0.70, "reasoning": "..." },
+    "claude": { "predicted_price": 156.00, "direction": "UP", "confidence": 0.73, "reasoning": "..." },
+    "mistral": { "predicted_price": 154.00, "direction": "UP", "confidence": 0.68, "reasoning": "..." }
+  },
+  "factors": [
+    "テクニカル: RSI 55（中立）",
+    "機関動向: やや売り圧力",
+    "ファンダメンタルズ: 成長継続"
+  ]
+}
+```
+
+### BigQuery保存
+
+| テーブル | 内容 |
+|---------|------|
+| predictions | 予測結果 |
+| prediction_accuracy | 予測精度（事後検証） |
+
+### 実装ステータス
+- [ ] 未実装（設計完了）
+
+
+---
+
+## AI株価予測機能 (APP - AI Price Predictor)
+
+### 概要
+4AIによる株価予測機能。短期から長期まで対応。
+
+### エンドポイント
+
+| Method | Endpoint | 説明 |
+|--------|----------|------|
+| POST | /api/predict | 株価予測 |
+
+### リクエスト
+```json
+{
+  "symbol": "AAPL",
+  "horizon": "1day",
+  "enableAI": true,
+  "saveToDB": true
+}
+```
+
+### 予測期間 (horizon)
+
+| 値 | 期間 | 重視データ |
+|----|------|-----------|
+| 1day | 1日後 | テクニカル指標、機関動向 |
+| 1week | 1週間後 | テクニカル、センチメント |
+| 1month | 1ヶ月後 | テクニカル、決算予想 |
+| 3months | 3ヶ月後 | 決算、セクタートレンド、マクロ |
+| 2years | 2年後 | ファンダメンタルズ、成長率、競争優位性 |
+
+### レスポンス例
+```json
+{
+  "symbol": "AAPL",
+  "horizon": "3months",
+  "current_price": 136.78,
+  "prediction": {
+    "predicted_price": 155.00,
+    "direction": "UP",
+    "confidence": 0.72,
+    "price_range": { "low": 148.00, "high": 162.00 }
+  },
+  "ai_predictions": {
+    "grok": { "predicted_price": 158.00, "confidence": 0.75, "reasoning": "..." },
+    "gemini": { "predicted_price": 152.00, "confidence": 0.70, "reasoning": "..." },
+    "claude": { "predicted_price": 156.00, "confidence": 0.73, "reasoning": "..." },
+    "mistral": { "predicted_price": 154.00, "confidence": 0.68, "reasoning": "..." }
+  }
+}
+```
+
+### BigQuery保存
+
+| テーブル | 内容 |
+|---------|------|
+| predictions | 予測結果 |
+| prediction_accuracy | 予測精度検証 |
+
+### 実装ステータス: 未実装（設計完了）
+
