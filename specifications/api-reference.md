@@ -102,3 +102,25 @@
 TOKEN=$(gcloud auth print-identity-token)
 curl -H "Authorization: Bearer $TOKEN" <URL>
 ```
+
+---
+
+## magi-stg 公開エンドポイント
+
+認証不要でアクセス可能なエンドポイント。
+
+| Method | Endpoint | 説明 |
+|--------|----------|------|
+| GET | /public/specs | 全仕様書取得 |
+| GET | /public/overview | システム概要取得 |
+
+### URL
+```
+https://magi-stg-398890937507.asia-northeast1.run.app
+```
+
+### 使用例
+```bash
+curl https://magi-stg-398890937507.asia-northeast1.run.app/public/overview
+```
+

@@ -34,7 +34,7 @@
 | magi-ui | 統合UI | https://magi-ui-398890937507.asia-northeast1.run.app |
 | magi-sys | 質問応答 | https://magi-app-398890937507.asia-northeast1.run.app |
 | magi-ac | 株価分析 | https://magi-ac-398890937507.asia-northeast1.run.app |
-| magi-stg | 仕様書管理 | https://magi-stg-dtrah63zyq-an.a.run.app |
+| magi-stg | 仕様書管理 | https://magi-stg-398890937507.asia-northeast1.run.app |
 
 ## 機能概要
 

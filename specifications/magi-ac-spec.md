@@ -175,3 +175,67 @@ curl -H "Authorization: Bearer $TOKEN" \
 - **min-instances=1**: 即時応答、月額$70程度
 
 ## 完成度: 100%
+
+---
+
+## 機関投資家分析機能 (IAA - Institutional Activity Analyzer)
+
+### 概要
+機関投資家による株価操作の兆候を検出・分析する機能。
+
+### エンドポイント
+
+| Method | Endpoint | 説明 |
+|--------|----------|------|
+| POST | /api/institutional/analyze | 操作分析 |
+| GET | /api/institutional/watchlist | 監視リスト取得 |
+| POST | /api/institutional/watchlist | 監視リスト追加 |
+| GET | /api/institutional/alerts | アラート一覧 |
+
+### 検出可能なパターン
+
+| パターン | 説明 | 閾値 |
+|---------|------|------|
+| volume_spike | 出来高スパイク | 平均の3倍以上 |
+| closing_manipulation | 終値操作 | 終値前15分の異常変動 |
+| high_dark_pool | ダークプール集中 | 50%以上 |
+| short_pressure | 空売り圧力 | 40%超が3日連続 |
+| painting_the_tape | 小口連続取引 | 10回以上連続 |
+| wash_trading | ウォッシュトレード | 同一価格大量取引 |
+
+### データソース
+
+| ソース | 取得データ | 更新頻度 |
+|--------|----------|---------|
+| Yahoo Finance | 株価・出来高 | リアルタイム |
+| SEC EDGAR | 13F報告書 | 四半期 |
+| FINRA | 空売りデータ | 日次 |
+| FINRA ADF | ダークプール | 週次 |
+
+### レスポンス例
+```json
+{
+  "symbol": "AAPL",
+  "manipulation_score": 0.81,
+  "signals": [
+    {
+      "type": "high_dark_pool_activity",
+      "severity": "high",
+      "description": "ダークプール取引が全体の56.3%を占める"
+    }
+  ],
+  "institutional_activity": {
+    "flow_direction": "bearish",
+    "recent_13f_holdings": [...]
+  },
+  "alerts": [...]
+}
+```
+
+### BigQuery保存
+
+| テーブル | 内容 |
+|---------|------|
+| manipulation_signals | 操作シグナル履歴 |
+| institutional_positions | 機関投資家ポジション |
+
