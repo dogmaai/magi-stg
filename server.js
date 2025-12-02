@@ -402,6 +402,31 @@ app.delete('/api/task', (req, res) => {
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Constitution API（全AI共有の憲法）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+app.get('/public/constitution', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  try {
+    const constitutionPath = path.join(SPEC_DIR, 'constitution.md');
+    const exists = fs.existsSync(constitutionPath);
+    if (!exists) {
+      return res.status(404).json({ error: 'Constitution not found' });
+    }
+    const constitution = fs.readFileSync(constitutionPath, 'utf-8');
+    res.json({
+      success: true,
+      version: '1.0',
+      north_star: 'MAGIは市場情報を安全に取り扱い、複数AIの知性を統合して、透明性のある投資判断と執行を行うシステムである',
+      content: constitution,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // サーバー起動
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 app.listen(PORT, function() {
