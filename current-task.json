@@ -1,82 +1,52 @@
 {
-  "task": "MAGI-AC Alpaca統合",
-  "phase": "Cloud Runデプロイ待ち",
+  "task": "MAGI-AC 自動売買システム",
+  "phase": "完了",
   "completed": {
-    "alpaca_collector": {
-      "file": "~/magi-ac/collectors/alpaca.js",
-      "functions": [
-        "getAlpacaAccount",
-        "getAlpacaQuote",
-        "getAlpacaTrade",
-        "createAlpacaOrder",
-        "getAlpacaPositions",
-        "getAlpacaOrders",
-        "cancelAlpacaOrder"
+    "alpaca_integration": {
+      "status": "完了",
+      "endpoints": 7
+    },
+    "auto_trade": {
+      "file": "~/magi-ac/src/auto-trade.js",
+      "features": [
+        "4AI合議による自動売買判定",
+        "監視銘柄カスタマイズ可能",
+        "購入条件: 4AI全員BUY",
+        "売却条件: 3AI以上SELL"
+      ],
+      "endpoints": [
+        "POST /api/auto-trade",
+        "GET /api/auto-trade/config"
       ]
     },
-    "routing": {
-      "file": "~/magi-ac/src/alpaca-routes.js",
-      "integrated": "index.js with registerAlpacaRoutes"
-    },
-    "secret_manager": [
-      "ALPACA_API_KEY",
-      "ALPACA_SECRET_KEY"
-    ],
-    "magi_stg_task_api": "added"
+    "ui_integration": {
+      "file": "~/magi-ui/src/App.js",
+      "page": "自動売買ページ追加",
+      "features": ["監視銘柄入力欄", "分析結果テーブル表示"]
+    }
   },
-  "pending": [
-    "magi-stg Cloud Runデプロイ",
-    "magi-ac Cloud Runデプロイ",
-    "動作確認"
-  ],
+  "services": {
+    "magi-ac": {
+      "url": "https://magi-ac-398890937507.asia-northeast1.run.app",
+      "revision": "magi-ac-00051-hvl",
+      "status": "稼働中"
+    },
+    "magi-ui": {
+      "url": "https://magi-ui-398890937507.asia-northeast1.run.app",
+      "revision": "magi-ui-00005-v98",
+      "status": "稼働中"
+    }
+  },
   "alpaca": {
     "account": "PA3ERVVI4N4I",
     "status": "ACTIVE",
     "environment": "paper",
-    "endpoint": "https://paper-api.alpaca.markets",
-    "cash": 100000,
-    "buying_power": 200000
+    "cash": 100000
   },
-  "endpoints": [
-    {
-      "method": "GET",
-      "path": "/alpaca/account",
-      "desc": "アカウント情報"
-    },
-    {
-      "method": "GET",
-      "path": "/alpaca/quote/:symbol",
-      "desc": "株価クォート"
-    },
-    {
-      "method": "GET",
-      "path": "/alpaca/trade/:symbol",
-      "desc": "直近約定"
-    },
-    {
-      "method": "GET",
-      "path": "/alpaca/positions",
-      "desc": "保有ポジション"
-    },
-    {
-      "method": "GET",
-      "path": "/alpaca/orders",
-      "desc": "注文一覧"
-    },
-    {
-      "method": "POST",
-      "path": "/alpaca/order",
-      "desc": "新規注文"
-    },
-    {
-      "method": "DELETE",
-      "path": "/alpaca/order/:id",
-      "desc": "注文キャンセル"
-    }
+  "next_tasks": [
+    "Cloud Scheduler設定（毎日自動実行）",
+    "閾値調整機能",
+    "取引履歴表示"
   ],
-  "deploy_commands": {
-    "magi_stg": "cd ~/magi-stg && gcloud run deploy magi-stg --source . --region asia-northeast1 --allow-unauthenticated --project screen-share-459802",
-    "magi_ac": "cd ~/magi-ac && gcloud run deploy magi-ac --source . --region asia-northeast1 --allow-unauthenticated --set-secrets=ALPACA_API_KEY=ALPACA_API_KEY:latest,ALPACA_SECRET_KEY=ALPACA_SECRET_KEY:latest --project screen-share-459802"
-  },
-  "updated_at": "2025-12-02T01:59:40.583Z"
+  "updated_at": "2025-12-02T08:50:00.000Z"
 }
