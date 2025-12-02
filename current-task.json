@@ -1,0 +1,82 @@
+{
+  "task": "MAGI-AC Alpaca統合",
+  "phase": "Cloud Runデプロイ待ち",
+  "completed": {
+    "alpaca_collector": {
+      "file": "~/magi-ac/collectors/alpaca.js",
+      "functions": [
+        "getAlpacaAccount",
+        "getAlpacaQuote",
+        "getAlpacaTrade",
+        "createAlpacaOrder",
+        "getAlpacaPositions",
+        "getAlpacaOrders",
+        "cancelAlpacaOrder"
+      ]
+    },
+    "routing": {
+      "file": "~/magi-ac/src/alpaca-routes.js",
+      "integrated": "index.js with registerAlpacaRoutes"
+    },
+    "secret_manager": [
+      "ALPACA_API_KEY",
+      "ALPACA_SECRET_KEY"
+    ],
+    "magi_stg_task_api": "added"
+  },
+  "pending": [
+    "magi-stg Cloud Runデプロイ",
+    "magi-ac Cloud Runデプロイ",
+    "動作確認"
+  ],
+  "alpaca": {
+    "account": "PA3ERVVI4N4I",
+    "status": "ACTIVE",
+    "environment": "paper",
+    "endpoint": "https://paper-api.alpaca.markets",
+    "cash": 100000,
+    "buying_power": 200000
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/alpaca/account",
+      "desc": "アカウント情報"
+    },
+    {
+      "method": "GET",
+      "path": "/alpaca/quote/:symbol",
+      "desc": "株価クォート"
+    },
+    {
+      "method": "GET",
+      "path": "/alpaca/trade/:symbol",
+      "desc": "直近約定"
+    },
+    {
+      "method": "GET",
+      "path": "/alpaca/positions",
+      "desc": "保有ポジション"
+    },
+    {
+      "method": "GET",
+      "path": "/alpaca/orders",
+      "desc": "注文一覧"
+    },
+    {
+      "method": "POST",
+      "path": "/alpaca/order",
+      "desc": "新規注文"
+    },
+    {
+      "method": "DELETE",
+      "path": "/alpaca/order/:id",
+      "desc": "注文キャンセル"
+    }
+  ],
+  "deploy_commands": {
+    "magi_stg": "cd ~/magi-stg && gcloud run deploy magi-stg --source . --region asia-northeast1 --allow-unauthenticated --project screen-share-459802",
+    "magi_ac": "cd ~/magi-ac && gcloud run deploy magi-ac --source . --region asia-northeast1 --allow-unauthenticated --set-secrets=ALPACA_API_KEY=ALPACA_API_KEY:latest,ALPACA_SECRET_KEY=ALPACA_SECRET_KEY:latest --project screen-share-459802"
+  },
+  "updated_at": "2025-12-02T01:59:40.583Z"
+}

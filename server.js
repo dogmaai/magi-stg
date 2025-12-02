@@ -356,7 +356,55 @@ app.get('/public/overview', (req, res) => {
   }
 });
 
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// タスク管理API（会話継続用）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const TASK_FILE = path.join(__dirname, 'current-task.json');
+
+// タスク保存
+app.post('/api/task', (req, res) => {
+  try {
+    const taskData = {
+      ...req.body,
+      updated_at: new Date().toISOString()
+    };
+    fs.writeFileSync(TASK_FILE, JSON.stringify(taskData, null, 2));
+    res.json({ success: true, message: 'Task saved', data: taskData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// タスク取得（認証不要）
+app.get('/public/task', (req, res) => {
+  try {
+    if (!fs.existsSync(TASK_FILE)) {
+      return res.json({ success: true, task: null, message: 'No active task' });
+    }
+    const taskData = JSON.parse(fs.readFileSync(TASK_FILE, 'utf-8'));
+    res.json({ success: true, task: taskData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// タスク削除
+app.delete('/api/task', (req, res) => {
+  try {
+    if (fs.existsSync(TASK_FILE)) {
+      fs.unlinkSync(TASK_FILE);
+    }
+    res.json({ success: true, message: 'Task cleared' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// サーバー起動
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 app.listen(PORT, function() {
   console.log('MAGI-STG running on port ' + PORT);
-  console.log('Public API: GET /public/specs, GET /public/overview');
+  console.log('Public API: /public/specs, /public/overview, /public/task');
 });
