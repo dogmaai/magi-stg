@@ -513,3 +513,94 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 ### 実装ステータス: 未実装（設計完了）
 
+
+---
+
+## Alpaca Trading API (v5.0 追加)
+
+### 概要
+Alpaca Paper Trading APIとの統合。自動売買システムの注文執行を担当。
+
+### エンドポイント
+
+| Method | Path | 説明 |
+|--------|------|------|
+| GET | /alpaca/account | 口座情報 |
+| GET | /alpaca/positions | ポジション一覧 |
+| GET | /alpaca/orders | 注文一覧 |
+| GET | /alpaca/quote/:symbol | リアルタイム価格 |
+| POST | /alpaca/trade | 成行/指値注文 |
+| POST | /alpaca/bracket | Bracket注文 |
+| POST | /alpaca/oco | OCO注文 |
+| POST | /alpaca/trailing-stop | Trailing Stop |
+| DELETE | /alpaca/order/:orderId | 注文キャンセル |
+| GET | /alpaca/calc-bracket/:price | Bracket価格計算 |
+
+### POST /alpaca/bracket
+
+Bracket注文（Entry + TakeProfit + StopLoss）
+```json
+// リクエスト
+{
+  "symbol": "AAPL",
+  "qty": 1,
+  "side": "buy",
+  "take_profit": 300.50,
+  "stop_loss": 277.60
+}
+
+// レスポンス
+{
+  "success": true,
+  "order": {
+    "id": "a6afbb1f-f2e8-40b5-a081-ed1e9d536752",
+    "symbol": "AAPL",
+    "qty": "1",
+    "side": "buy",
+    "type": "market",
+    "order_class": "bracket",
+    "status": "accepted",
+    "legs": [
+      {"type": "limit", "limit_price": "300.50"},
+      {"type": "stop", "stop_price": "277.60"}
+    ]
+  }
+}
+```
+
+### POST /alpaca/oco
+
+OCO注文（One-Cancels-Other）
+```json
+{
+  "symbol": "AAPL",
+  "qty": 1,
+  "side": "sell",
+  "take_profit": 300.00,
+  "stop_loss": 275.00
+}
+```
+
+### POST /alpaca/trailing-stop
+
+Trailing Stop注文
+```json
+{
+  "symbol": "AAPL",
+  "qty": 1,
+  "side": "sell",
+  "trail_percent": 3
+}
+```
+
+### Secret Manager
+
+| キー | 用途 |
+|-----|------|
+| ALPACA_API_KEY | APIキー |
+| ALPACA_SECRET_KEY | シークレットキー |
+
+### 口座情報
+- Paper Trading: https://paper-api.alpaca.markets
+- 初期残高: $100,000
+- 取引時間: 24/7（Paper Trading）

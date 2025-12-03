@@ -1,130 +1,80 @@
 {
+  "version": "5.0",
+  "updated": "2025-12-03",
   "magi_sys": {
-    "base_url": "https://magi-app-398890937507.run.app",
+    "base_url": "https://magi-app-398890937507.asia-northeast1.run.app",
     "port": 8080,
     "endpoints": [
-      {
-        "method": "GET",
-        "path": "/health",
-        "description": "ヘルスチェック"
-      },
-      {
-        "method": "GET",
-        "path": "/status",
-        "description": "5つのAPIキー確認"
-      },
-      {
-        "method": "POST",
-        "path": "/api/consensus",
-        "description": "質問応答（5 AI合議）",
-        "body": {
-          "prompt": "string",
-          "meta": {
-            "mode": "consensus|integration|synthesis"
-          }
-        }
-      },
-      {
-        "method": "POST",
-        "path": "/api/grok/ping",
-        "description": "Grok接続確認"
-      }
+      {"method": "GET", "path": "/health", "description": "ヘルスチェック"},
+      {"method": "GET", "path": "/status", "description": "5つのAPIキー確認"},
+      {"method": "POST", "path": "/api/consensus", "description": "質問応答（5 AI合議）"},
+      {"method": "POST", "path": "/api/grok/ping", "description": "Grok接続確認"}
     ]
   },
   "magi_ac": {
-    "base_url": "https://magi-ac-398890937507.run.app",
+    "base_url": "https://magi-ac-398890937507.asia-northeast1.run.app",
     "port": 8888,
     "endpoints": [
-      {
-        "method": "GET",
-        "path": "/health",
-        "description": "ヘルスチェック"
-      },
-      {
-        "method": "POST",
-        "path": "/api/analyze",
-        "description": "銘柄分析（4 AI判断）",
-        "body": {
-          "symbol": "string"
-        }
-      },
-      {
-        "method": "GET",
-        "path": "/api/analytics/latest/:symbol",
-        "description": "最新価格"
-      },
-      {
-        "method": "GET",
-        "path": "/api/analytics/history/:symbol",
-        "description": "価格履歴"
-      },
-      {
-        "method": "GET",
-        "path": "/api/analytics/stats/:symbol",
-        "description": "統計情報"
-      },
-      {
-        "method": "POST",
-        "path": "/api/admin/init-bigquery",
-        "description": "BigQuery初期化"
-      },
-      {
-        "method": "POST",
-        "path": "/api/document/analyze",
-        "description": "文書解析",
-        "body": {
-          "symbol": "string",
-          "document": "string"
-        }
-      },
-      {
-        "method": "POST",
-        "path": "/api/document/sentiment",
-        "description": "センチメント分析",
-        "body": {
-          "symbol": "string",
-          "text": "string"
-        }
-      },
-      {
-        "method": "POST",
-        "path": "/api/document/summarize",
-        "description": "レポート要約",
-        "body": {
-          "symbol": "string",
-          "document": "string"
-        }
-      }
+      {"method": "GET", "path": "/health", "description": "ヘルスチェック"},
+      {"method": "POST", "path": "/api/analyze", "description": "4AI合議投資判断"},
+      {"method": "GET", "path": "/api/technical/:symbol", "description": "テクニカル分析"},
+      {"method": "GET", "path": "/api/history/:symbol", "description": "分析履歴"},
+      {"method": "POST", "path": "/api/predict", "description": "AI株価予測"},
+      {"method": "POST", "path": "/api/document/sentiment", "description": "センチメント分析"},
+      {"method": "POST", "path": "/api/document/summarize", "description": "文書要約"},
+      {"method": "GET", "path": "/alpaca/account", "description": "Alpaca口座情報"},
+      {"method": "GET", "path": "/alpaca/positions", "description": "ポジション一覧"},
+      {"method": "GET", "path": "/alpaca/orders", "description": "注文一覧"},
+      {"method": "GET", "path": "/alpaca/quote/:symbol", "description": "リアルタイム価格"},
+      {"method": "POST", "path": "/alpaca/trade", "description": "成行/指値注文"},
+      {"method": "POST", "path": "/alpaca/bracket", "description": "Bracket注文"},
+      {"method": "POST", "path": "/alpaca/oco", "description": "OCO注文"},
+      {"method": "POST", "path": "/alpaca/trailing-stop", "description": "Trailing Stop"},
+      {"method": "DELETE", "path": "/alpaca/order/:orderId", "description": "注文キャンセル"}
+    ]
+  },
+  "magi_decision": {
+    "base_url": "https://magi-decision-398890937507.asia-northeast1.run.app",
+    "port": 8080,
+    "endpoints": [
+      {"method": "GET", "path": "/health", "description": "ヘルスチェック"},
+      {"method": "GET", "path": "/config", "description": "設定確認"},
+      {"method": "POST", "path": "/decide", "description": "手動判断トリガー"},
+      {"method": "POST", "path": "/pubsub/price-update", "description": "価格更新受信(Pub/Sub)"}
+    ]
+  },
+  "magi_executor": {
+    "base_url": "https://magi-executor-398890937507.asia-northeast1.run.app",
+    "port": 8080,
+    "endpoints": [
+      {"method": "GET", "path": "/health", "description": "ヘルスチェック"},
+      {"method": "GET", "path": "/config", "description": "設定確認"},
+      {"method": "GET", "path": "/history", "description": "取引履歴"},
+      {"method": "POST", "path": "/execute", "description": "手動注文実行"},
+      {"method": "POST", "path": "/pubsub/trade-signal", "description": "シグナル受信(Pub/Sub)"}
     ]
   },
   "magi_stg": {
-    "base_url": "https://magi-stg-398890937507.run.app",
-    "port": 8090,
+    "base_url": "https://magi-stg-398890937507.asia-northeast1.run.app",
+    "port": 8080,
     "endpoints": [
-      {
-        "method": "GET",
-        "path": "/health",
-        "description": "ヘルスチェック"
-      },
-      {
-        "method": "GET",
-        "path": "/api/spec/list",
-        "description": "仕様書一覧"
-      },
-      {
-        "method": "GET",
-        "path": "/api/spec/:category",
-        "description": "仕様書取得"
-      },
-      {
-        "method": "POST",
-        "path": "/api/spec/upload",
-        "description": "仕様書アップロード",
-        "body": {
-          "category": "string",
-          "content": "string"
-        }
-      }
+      {"method": "GET", "path": "/health", "description": "ヘルスチェック"},
+      {"method": "GET", "path": "/public/specs", "description": "全仕様書取得（認証不要）"},
+      {"method": "GET", "path": "/public/overview", "description": "システム概要（認証不要）"},
+      {"method": "GET", "path": "/api/specs", "description": "仕様書一覧"},
+      {"method": "GET", "path": "/api/spec/:filename", "description": "個別仕様書取得"}
+    ]
+  },
+  "pubsub": {
+    "topics": [
+      {"name": "price-updates", "description": "価格変動通知"},
+      {"name": "trade-signals", "description": "売買シグナル"},
+      {"name": "trade-results", "description": "取引結果"}
+    ],
+    "subscriptions": [
+      {"name": "price-updates-decision", "topic": "price-updates", "push_to": "magi-decision"},
+      {"name": "trade-signals-executor", "topic": "trade-signals", "push_to": "magi-executor"},
+      {"name": "trade-results-monitor", "topic": "trade-results", "push_to": "magi-moni"}
     ]
   }
 }
