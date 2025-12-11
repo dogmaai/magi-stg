@@ -1,5 +1,5 @@
 {
-  "version": "6.1",
+  "version": "6.2",
   "updated_at": "2025-12-11",
   "providers": {
     "grok": {
@@ -15,7 +15,7 @@
         "magi_ac": "Unit-B2"
       },
       "role": "Creative Analysis",
-      "specialty": "トレント予測、イノベーション分析、新興市場発見",
+      "specialty": "トレンド予測、イノベーション分析、新興市場発見",
       "fallback_chains": ["gemini", "mistral"]
     },
     "gemini": {
@@ -63,7 +63,7 @@
         "magi_ac": null
       },
       "role": "Integration Judge",
-      "specialty": "意見統合、コンセンスス登成、最終判断",
+      "specialty": "意見統合、コンセンサス形成、最終判断",
       "fallback_chains": ["claude", "gemini"]
     },
     "mistral": {
@@ -79,7 +79,7 @@
         "magi_ac": "Unit-R4"
       },
       "role": "Strategic Analysis",
-      "specialty": "戙略立案、リスク評価、実行可能性判断",
+      "specialty": "戦略立案、リスク評価、実行可能性判断",
       "fallback_chains": ["openai", "claude"]
     },
     "cohere": {
@@ -110,12 +110,49 @@
         }
       },
       "fallback_chains": ["claude", "gemini"]
+    },
+    "groq": {
+      "model": "llama-3.3-70b-versatile",
+      "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+      "temperature": 0.3,
+      "max_tokens": 1024,
+      "timeout_ms": 5000,
+      "enabled": true,
+      "investment_decision": false,
+      "urgent_alert": true,
+      "unit_names": {
+        "magi_sys": null,
+        "magi_ac": "HERMES"
+      },
+      "role": "Urgent Alert & Fast Response",
+      "specialty": "緊急判断、高速応答、リアルタイムアラート",
+      "response_target_ms": 500,
+      "fallback_chains": ["together", "mistral"]
+    },
+    "together": {
+      "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+      "endpoint": "https://api.together.xyz/v1/chat/completions",
+      "temperature": 0.4,
+      "max_tokens": 2048,
+      "timeout_ms": 30000,
+      "enabled": true,
+      "investment_decision": false,
+      "backup_llm": true,
+      "unit_names": {
+        "magi_sys": null,
+        "magi_ac": "ANIMA"
+      },
+      "role": "Backup & Synthesis",
+      "specialty": "フォールバック対応、追加分析、合議補助",
+      "fallback_chains": ["groq", "mistral"]
     }
   },
   "ai_teams": {
     "investment_decision": ["grok", "gemini", "claude", "mistral"],
     "document_analysis": ["cohere"],
-    "qa_integration": ["openai"]
+    "qa_integration": ["openai"],
+    "urgent_alert": ["groq"],
+    "backup": ["together"]
   },
   "system_config": {
     "default_timeout_ms": 30000,
