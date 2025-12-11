@@ -427,9 +427,29 @@ app.get('/public/constitution', (req, res) => {
   }
 });
 
+// LLM設定API（8プロバイダー対応）
+app.get('/public/llm-config', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  try {
+    const configPath = path.join(__dirname, 'public', 'llm-config.json');
+    if (!fs.existsSync(configPath)) {
+      return res.status(404).json({ error: 'LLM config not found' });
+    }
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    res.json({
+      success: true,
+      source: 'magi-stg',
+      ...config,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // サーバー起動
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 app.listen(PORT, function() {
   console.log('MAGI-STG running on port ' + PORT);
-  console.log('Public API: /public/specs, /public/overview, /public/task');
+  console.log('Public API: /public/specs, /public/overview, /public/task, /public/llm-config');
 });
