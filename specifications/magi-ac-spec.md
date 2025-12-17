@@ -2,11 +2,12 @@
 
 ## 概要
 - **目的**: 証券分析・投資判断システム
-- **AI数**: 5つ (投資判断4 + 文書解析1)
+- **バージョン**: 6.0 (Alpaca SDK移行完了)
+- **AI数**: 5つ (投資判断4 + 文書解析1) - 全て正常動作確認済み
 - **デプロイ**: Cloud Run
 - **URL**: https://magi-ac-398890937507.asia-northeast1.run.app
 - **ポート**: 8888
-- **更新日**: 2025-11-26
+- **更新日**: 2025-12-12
 
 ## AI構成
 
@@ -516,10 +517,15 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 ---
 
-## Alpaca Trading API (v5.0 追加)
+## Alpaca Trading API (v6.0 SDK移行完了)
 
 ### 概要
-Alpaca Paper Trading APIとの統合。自動売買システムの注文執行を担当。
+Alpaca SDK（@alpacahq/alpaca-trade-api）による完全統合。自動売買システムの注文執行を担当。
+
+### v6.0 更新内容
+- Alpaca SDKへ完全移行
+- 全注文タイプ動作確認済み
+- AAPL Bracket注文テスト成功
 
 ### エンドポイント
 
