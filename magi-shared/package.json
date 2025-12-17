@@ -1,0 +1,17 @@
+{
+  "name": "magi-shared",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "MAGI System shared AI providers",
+  "main": "ai-providers/index.js",
+  "exports": {
+    ".": "./ai-providers/index.js",
+    "./ai-providers": "./ai-providers/index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": ["magi", "ai", "providers"],
+  "author": "Dogma AI",
+  "license": "MIT"
+}

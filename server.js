@@ -2,11 +2,15 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Anthropic from '@anthropic-ai/sdk';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import OpenAI from 'openai';
-import Groq from 'groq-sdk';
-import MistralClient from '@mistralai/mistralai';
+
+// Shared AI Providers
+import {
+  GrokProvider,
+  GeminiProvider,
+  ClaudeProvider,
+  MistralProvider,
+  OpenAIProvider
+} from './magi-shared/ai-providers/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +22,10 @@ const PORT = process.env.PORT || 8080;
 // 仕様書をメモリにキャッシュ
 let specifications = null;
 
-// 起動時に仕様書を読み込み
+// AI Providers (shared package)
+let providers = {};
+
+// 起動時に仕様書とプロバイダーを初期化
 (async () => {
   specifications = loadLocalSpecifications();
   if (specifications) {
@@ -26,6 +33,34 @@ let specifications = null;
   } else {
     console.warn('⚠️  Failed to load specifications');
   }
+
+  // Initialize AI providers
+  if (process.env.XAI_API_KEY) {
+    providers.grok = new GrokProvider(process.env.XAI_API_KEY, {
+      model: process.env.XAI_MODEL || 'grok-2-latest'
+    });
+  }
+  if (process.env.GEMINI_API_KEY) {
+    providers.gemini = new GeminiProvider(process.env.GEMINI_API_KEY, {
+      model: process.env.GEMINI_MODEL || 'gemini-2.0-flash-exp'
+    });
+  }
+  if (process.env.ANTHROPIC_API_KEY) {
+    providers.claude = new ClaudeProvider(process.env.ANTHROPIC_API_KEY, {
+      model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
+    });
+  }
+  if (process.env.OPENAI_API_KEY) {
+    providers.openai = new OpenAIProvider(process.env.OPENAI_API_KEY, {
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini'
+    });
+  }
+  if (process.env.MISTRAL_API_KEY) {
+    providers.mistral = new MistralProvider(process.env.MISTRAL_API_KEY, {
+      model: process.env.MISTRAL_MODEL || 'mistral-large-latest'
+    });
+  }
+  console.log('✅ AI Providers initialized:', Object.keys(providers).join(', '));
 })();
 
 // ローカルファイルから仕様書読み込み
@@ -150,12 +185,13 @@ app.get('/health', (req, res) => {
 // ステータス確認
 app.get('/status', (req, res) => {
   res.json({
-    grok: !!process.env.XAI_API_KEY,
-    gemini: !!process.env.GEMINI_API_KEY,
-    claude: !!process.env.ANTHROPIC_API_KEY,
-    openai: !!process.env.OPENAI_API_KEY,
-    mistral: !!process.env.MISTRAL_API_KEY,
-    specifications: specifications !== null
+    grok: !!providers.grok,
+    gemini: !!providers.gemini,
+    claude: !!providers.claude,
+    openai: !!providers.openai,
+    mistral: !!providers.mistral,
+    specifications: specifications !== null,
+    shared_providers: true
   });
 });
 
@@ -230,83 +266,44 @@ app.post('/api/consensus', async (req, res) => {
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// AI呼び出し関数
+// AI呼び出し関数（Shared Providers使用）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 async function callGrok(prompt) {
-  const groq = new Groq({
-    apiKey: process.env.XAI_API_KEY,
-    baseURL: 'https://api.x.ai/v1'
-  });
-  const completion = await groq.chat.completions.create({
-    model: process.env.XAI_MODEL || 'grok-2-latest',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.5
-  });
-  return completion.choices[0]?.message?.content || 'No response';
+  if (!providers.grok) throw new Error('Grok provider not initialized');
+  return await providers.grok.generate(prompt, { temperature: 0.5 });
 }
 
 async function callGemini(prompt) {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ 
-    model: process.env.GEMINI_MODEL || 'gemini-2.0-flash-exp',
-    generationConfig: { temperature: 0.2 }
-  });
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  if (!providers.gemini) throw new Error('Gemini provider not initialized');
+  return await providers.gemini.generate(prompt, { temperature: 0.2 });
 }
 
 async function callClaude(prompt) {
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const message = await anthropic.messages.create({
-    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
-    max_tokens: 1024,
-    temperature: 0.4,
-    messages: [{ role: 'user', content: prompt }]
-  });
-  return message.content[0].text;
+  if (!providers.claude) throw new Error('Claude provider not initialized');
+  return await providers.claude.generate(prompt, { temperature: 0.4 });
 }
 
 async function callOpenAI(prompt) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const completion = await openai.chat.completions.create({
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.3
-  });
-  return completion.choices[0]?.message?.content || 'No response';
+  if (!providers.openai) throw new Error('OpenAI provider not initialized');
+  return await providers.openai.generate(prompt, { temperature: 0.3 });
 }
 
 async function callMistral(prompt) {
-  const mistral = new MistralClient(process.env.MISTRAL_API_KEY);
-  const response = await mistral.chat({
-    model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.3
-  });
-  return response.choices[0]?.message?.content || 'No response';
+  if (!providers.mistral) throw new Error('Mistral provider not initialized');
+  return await providers.mistral.generate(prompt, { temperature: 0.3 });
 }
 
 async function integrateResponses(responses, originalPrompt) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  if (!providers.openai) throw new Error('OpenAI provider not initialized');
   const integrationPrompt = `Integrate these 5 AI responses into a unified answer: ${JSON.stringify(responses)}`;
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: integrationPrompt }],
-    temperature: 0.3
-  });
-  return completion.choices[0]?.message?.content;
+  return await providers.openai.generate(integrationPrompt, { temperature: 0.3 });
 }
 
 async function synthesizeResponses(responses, originalPrompt) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  if (!providers.openai) throw new Error('OpenAI provider not initialized');
   const synthesisPrompt = `Create emergent insight from these diverse perspectives: ${JSON.stringify(responses)}`;
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: synthesisPrompt }],
-    temperature: 0.7
-  });
-  return completion.choices[0]?.message?.content;
+  return await providers.openai.generate(synthesisPrompt, { temperature: 0.7 });
 }
 
 function findConsensus(responses) {
@@ -356,6 +353,60 @@ app.get('/public/overview', (req, res) => {
   }
 });
 
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AI重み管理API（Learning Engine連携）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// 現在のAI重み（メモリ保持）
+let currentWeights = {
+  unit_b2: 0.25,  // Grok
+  unit_m1: 0.25,  // Gemini
+  unit_c3: 0.25,  // Claude
+  unit_r4: 0.25,  // Mistral
+  updated_at: null
+};
+
+// 重み取得（認証あり）
+app.get('/api/weights', (req, res) => {
+  res.json(currentWeights);
+});
+
+// 重み更新（magi-decisionから呼び出される）
+app.post('/api/weights/update', (req, res) => {
+  const { unit_b2, unit_m1, unit_c3, unit_r4 } = req.body;
+
+  if (unit_b2 !== undefined && unit_m1 !== undefined && unit_c3 !== undefined && unit_r4 !== undefined) {
+    currentWeights = {
+      unit_b2: parseFloat(unit_b2),
+      unit_m1: parseFloat(unit_m1),
+      unit_c3: parseFloat(unit_c3),
+      unit_r4: parseFloat(unit_r4),
+      updated_at: new Date().toISOString()
+    };
+    console.log('[WEIGHTS] Updated:', currentWeights);
+    res.json({ success: true, weights: currentWeights });
+  } else {
+    res.status(400).json({ error: 'All weights required (unit_b2, unit_m1, unit_c3, unit_r4)' });
+  }
+});
+
+// 公開エンドポイント（認証不要）
+app.get('/public/weights', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.json({
+    success: true,
+    source: 'magi-stg',
+    weights: currentWeights,
+    description: {
+      unit_b2: 'Grok (BALTHASAR-2) - センチメント分析',
+      unit_m1: 'Gemini (MELCHIOR-1) - ニュース分析',
+      unit_c3: 'Claude (CASPER-3) - ESG分析',
+      unit_r4: 'Mistral (SOPHIA-5) - 高速スクリーニング'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // タスク管理API（会話継続用）
@@ -576,6 +627,20 @@ app.post('/admin/llm-config/reload', (req, res) => {
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 app.listen(PORT, function() {
-  console.log('MAGI-STG running on port ' + PORT);
-  console.log('Public API: /public/specs, /public/overview, /public/task, /public/llm-config');
+  console.log('');
+  console.log('========================================');
+  console.log('  MAGI-STG v6.0');
+  console.log('  Shared Providers + Weights Server');
+  console.log('========================================');
+  console.log('  Port:', PORT);
+  console.log('  Shared Providers: Enabled');
+  console.log('  Learning Engine: Enabled');
+  console.log('  Public API:');
+  console.log('    /public/specs');
+  console.log('    /public/overview');
+  console.log('    /public/task');
+  console.log('    /public/llm-config');
+  console.log('    /public/weights');
+  console.log('========================================');
+  console.log('');
 });
