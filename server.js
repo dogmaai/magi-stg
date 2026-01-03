@@ -2,6 +2,10 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
+
+// Document upload module
+import { initCohere, processDocumentUpload } from './lib/document-upload.js';
 
 // Shared AI Providers
 import {
@@ -12,12 +16,34 @@ import {
   OpenAIProvider
 } from './magi-shared/ai-providers/index.js';
 
+// Role management
+import rolesRouter from './src/routes/roles.js';
+import { roleManager } from './src/services/role-manager.js';
+
+// Credit management
+import creditsRouter from './src/routes/credits.js';
+import { creditManager } from './src/services/credit-manager.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SPEC_DIR = path.join(__dirname, 'specifications');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+// Multer configuration for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'text/plain', 'text/markdown'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Unsupported file type. Allowed: PDF, TXT, MD'));
+    }
+  }
+});
 
 // 仕様書をメモリにキャッシュ
 let specifications = null;
@@ -32,6 +58,22 @@ let providers = {};
     console.log('✅ Specifications loaded and cached');
   } else {
     console.warn('⚠️  Failed to load specifications');
+  }
+
+  // Initialize role manager
+  try {
+    await roleManager.initialize();
+    console.log('✅ Role manager initialized');
+  } catch (error) {
+    console.error('⚠️  Failed to initialize role manager:', error.message);
+  }
+
+  // Initialize credit manager
+  try {
+    await creditManager.initialize();
+    console.log('✅ Credit manager initialized');
+  } catch (error) {
+    console.error('⚠️  Failed to initialize credit manager:', error.message);
   }
 
   // Initialize AI providers
@@ -61,6 +103,11 @@ let providers = {};
     });
   }
   console.log('✅ AI Providers initialized:', Object.keys(providers).join(', '));
+
+  // Initialize Cohere for document embeddings
+  if (process.env.COHERE_API_KEY) {
+    initCohere(process.env.COHERE_API_KEY);
+  }
 })();
 
 // ローカルファイルから仕様書読み込み
@@ -96,6 +143,12 @@ ${prompt}
 
 app.use(express.json());
 app.use(express.static('public'));
+
+// Register role management routes
+app.use('/', rolesRouter);
+
+// Register credit management routes
+app.use('/', creditsRouter);
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 仕様書配信API（新規追加）
@@ -626,21 +679,219 @@ app.post('/admin/llm-config/reload', (req, res) => {
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Document Upload API（手動アップロード用）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// POST /api/documents/upload - ドキュメントアップロード
+app.post('/api/documents/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No file uploaded'
+      });
+    }
+
+    const { symbol, doc_type, title, source_url, published_at, uploaded_by } = req.body;
+
+    if (!symbol) {
+      return res.status(400).json({
+        success: false,
+        error: 'Symbol is required'
+      });
+    }
+
+    console.log(`📄 Processing upload: ${req.file.originalname} for ${symbol}`);
+
+    const result = await processDocumentUpload(req.file, {
+      symbol,
+      doc_type: doc_type || 'analyst_report',
+      title,
+      source_url,
+      published_at,
+      uploaded_by: uploaded_by || 'api'
+    });
+
+    console.log(`✅ Upload complete: ${result.id}`);
+
+    res.json({
+      success: true,
+      message: 'Document uploaded and processed',
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Upload error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// GET /api/documents/stats - アップロード統計
+app.get('/api/documents/stats', async (req, res) => {
+  try {
+    const { BigQuery } = await import('@google-cloud/bigquery');
+    const bigquery = new BigQuery();
+
+    const query = `
+      SELECT
+        symbol,
+        doc_type,
+        COUNT(*) as count,
+        MAX(created_at) as latest_upload
+      FROM \`magi_analytics.analysis_vectors\`
+      GROUP BY symbol, doc_type
+      ORDER BY latest_upload DESC
+    `;
+
+    const [rows] = await bigquery.query({ query });
+
+    res.json({
+      success: true,
+      stats: rows,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/documents/list - ドキュメント一覧取得
+app.get('/api/documents/list', async (req, res) => {
+  try {
+    const { BigQuery } = await import('@google-cloud/bigquery');
+    const bigquery = new BigQuery();
+
+    const { symbol, doc_type, limit = 50, offset = 0 } = req.query;
+
+    let whereClause = '';
+    const conditions = [];
+    if (symbol) conditions.push(`symbol = '${symbol.toUpperCase()}'`);
+    if (doc_type) conditions.push(`doc_type = '${doc_type}'`);
+    if (conditions.length > 0) whereClause = `WHERE ${conditions.join(' AND ')}`;
+
+    const query = `
+      SELECT
+        id,
+        symbol,
+        doc_type,
+        title,
+        file_name,
+        file_path,
+        source_url,
+        uploaded_by,
+        published_at,
+        created_at,
+        LENGTH(content) as content_length
+      FROM \`magi_analytics.analysis_vectors\`
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT ${parseInt(limit)}
+      OFFSET ${parseInt(offset)}
+    `;
+
+    const [rows] = await bigquery.query({ query });
+
+    res.json({
+      success: true,
+      count: rows.length,
+      documents: rows,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE /api/documents/:id - ドキュメント削除
+app.delete('/api/documents/:id', async (req, res) => {
+  try {
+    const { BigQuery } = await import('@google-cloud/bigquery');
+    const { Storage } = await import('@google-cloud/storage');
+    const bigquery = new BigQuery();
+    const storage = new Storage();
+
+    const { id } = req.params;
+
+    // まずドキュメント情報を取得
+    const selectQuery = `
+      SELECT id, file_path, symbol, title
+      FROM \`magi_analytics.analysis_vectors\`
+      WHERE id = '${id}'
+    `;
+    const [rows] = await bigquery.query({ query: selectQuery });
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Document not found'
+      });
+    }
+
+    const doc = rows[0];
+
+    // GCSからファイル削除
+    if (doc.file_path && doc.file_path.startsWith('gs://')) {
+      try {
+        const bucketName = process.env.DOCUMENTS_BUCKET || 'magi-documents-screen-share-459802';
+        const filePath = doc.file_path.replace(`gs://${bucketName}/`, '');
+        await storage.bucket(bucketName).file(filePath).delete();
+        console.log(`🗑️  Deleted from GCS: ${filePath}`);
+      } catch (gcsError) {
+        console.warn(`⚠️  GCS delete failed (continuing): ${gcsError.message}`);
+      }
+    }
+
+    // BigQueryから削除
+    const deleteQuery = `
+      DELETE FROM \`magi_analytics.analysis_vectors\`
+      WHERE id = '${id}'
+    `;
+    await bigquery.query({ query: deleteQuery });
+
+    console.log(`✅ Document deleted: ${id} (${doc.title})`);
+
+    res.json({
+      success: true,
+      message: 'Document deleted',
+      deleted: {
+        id: doc.id,
+        symbol: doc.symbol,
+        title: doc.title
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Delete error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 app.listen(PORT, function() {
   console.log('');
   console.log('========================================');
-  console.log('  MAGI-STG v6.0');
-  console.log('  Shared Providers + Weights Server');
+  console.log('  MAGI-STG v7.1');
+  console.log('  Document Upload + List/Delete API');
   console.log('========================================');
   console.log('  Port:', PORT);
   console.log('  Shared Providers: Enabled');
   console.log('  Learning Engine: Enabled');
+  console.log('  Document Upload: Enabled');
   console.log('  Public API:');
   console.log('    /public/specs');
   console.log('    /public/overview');
   console.log('    /public/task');
   console.log('    /public/llm-config');
   console.log('    /public/weights');
+  console.log('  Document API:');
+  console.log('    POST   /api/documents/upload');
+  console.log('    GET    /api/documents/list');
+  console.log('    GET    /api/documents/stats');
+  console.log('    DELETE /api/documents/:id');
   console.log('========================================');
   console.log('');
 });

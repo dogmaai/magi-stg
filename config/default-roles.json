@@ -1,0 +1,127 @@
+{
+  "version": "1.0",
+  "services": {
+    "magi-sys": {
+      "name": "5AI Q&A System",
+      "roles": {
+        "BALTHASAR-2": {
+          "description": "創造的・革新的分析",
+          "provider": "grok",
+          "model": "grok-2-latest",
+          "fallback_provider": "mistral",
+          "fallback_model": "mistral-large-latest",
+          "enabled": true
+        },
+        "MELCHIOR-1": {
+          "description": "論理的・科学的分析",
+          "provider": "gemini",
+          "model": "gemini-2.0-flash-exp",
+          "fallback_provider": "openai",
+          "fallback_model": "gpt-4o-mini",
+          "enabled": true
+        },
+        "CASPER-3": {
+          "description": "人間的・感情的分析",
+          "provider": "anthropic",
+          "model": "claude-sonnet-4-20250514",
+          "fallback_provider": "gemini",
+          "fallback_model": "gemini-2.0-flash-exp",
+          "enabled": true
+        },
+        "MARY-4": {
+          "description": "統合・裁定（Judge）",
+          "provider": "openai",
+          "model": "gpt-4o-mini",
+          "fallback_provider": "anthropic",
+          "fallback_model": "claude-sonnet-4-20250514",
+          "enabled": true
+        },
+        "SOPHIA-5": {
+          "description": "実践的・戦略的分析",
+          "provider": "mistral",
+          "model": "mistral-large-latest",
+          "fallback_provider": "grok",
+          "fallback_model": "grok-2-latest",
+          "enabled": true
+        }
+      }
+    },
+    "magi-ac": {
+      "name": "4AI Securities Analysis",
+      "roles": {
+        "Unit-B2": {
+          "description": "創造的トレンド分析",
+          "provider": "grok",
+          "model": "grok-2-latest",
+          "fallback_provider": "mistral",
+          "fallback_model": "mistral-large-latest",
+          "enabled": true
+        },
+        "Unit-M1": {
+          "description": "論理的数値分析",
+          "provider": "gemini",
+          "model": "gemini-2.0-flash-exp",
+          "fallback_provider": "openai",
+          "fallback_model": "gpt-4o-mini",
+          "enabled": true
+        },
+        "Unit-C3": {
+          "description": "人間的価値分析（ESG）",
+          "provider": "anthropic",
+          "model": "claude-sonnet-4-20250514",
+          "fallback_provider": "gemini",
+          "fallback_model": "gemini-2.0-flash-exp",
+          "enabled": true
+        },
+        "Unit-R4": {
+          "description": "実践的リスク分析",
+          "provider": "mistral",
+          "model": "mistral-large-latest",
+          "fallback_provider": "grok",
+          "fallback_model": "grok-2-latest",
+          "enabled": true
+        },
+        "ISABEL": {
+          "description": "文書解析・RAG",
+          "provider": "cohere",
+          "model": "command-r-plus",
+          "fallback_provider": null,
+          "fallback_model": null,
+          "enabled": true
+        }
+      }
+    }
+  },
+  "available_providers": [
+    {
+      "id": "anthropic",
+      "name": "Anthropic (Claude)",
+      "models": ["claude-sonnet-4-20250514", "claude-3-5-haiku-20241022"]
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI (GPT)",
+      "models": ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo"]
+    },
+    {
+      "id": "grok",
+      "name": "xAI (Grok)",
+      "models": ["grok-2-latest", "grok-beta"]
+    },
+    {
+      "id": "gemini",
+      "name": "Google (Gemini)",
+      "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash"]
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral AI",
+      "models": ["mistral-large-latest", "mistral-medium-latest", "mistral-small-latest"]
+    },
+    {
+      "id": "cohere",
+      "name": "Cohere",
+      "models": ["command-r-plus", "command-r", "command"]
+    }
+  ]
+}
