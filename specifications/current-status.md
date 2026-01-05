@@ -1,5 +1,37 @@
 # MAGI System 現在のステータス
+## バージョン: 7.2 (Spec Archive System)
+## 更新日: 2026-01-05
+## v7.2 新機能（2026-01-05）
 
+### 仕様書アーカイブシステム
+- Cloud Storage `gs://magi-specs` にアーカイブ保存
+- ライフサイクルルール自動適用（30日→Nearline、365日→Archive）
+- 新規エンドポイント
+  - POST /api/specs/archive - 仕様書アーカイブ
+  - POST /api/specs/sync - current/へ同期
+  - GET /api/specs/archives - アーカイブ一覧
+
+### Cloud Run コスト最適化
+- 全バックエンドサービス: min-instances=0
+- magi-ui のみ: min-instances=1（即時応答）
+- 推定月額削減: $55-85
+
+### サービス設定一覧
+
+| サービス | min-instances | 理由 |
+|---------|---------------|------|
+| magi-ui | 1 | ユーザー向けUI |
+| magi-ac | 0 | API呼び出し時のみ |
+| magi-app | 0 | API呼び出し時のみ |
+| magi-data-collector | 0 | スケジューラ実行時 |
+| magi-decision | 0 | Pub/Sub受信時 |
+| magi-executor | 0 | シグナル受信時 |
+| magi-moni | 0 | 監視リクエスト時 |
+| magi-stg | 0 | 仕様取得時 |
+| magi-websocket | 0 | WebSocket接続時 |
+| magi-mcp | 0 | MCP呼び出し時 |
+
+---
 ## バージョン: 7.0 (Algo Prediction System)
 ## 更新日: 2026-01-03
 ## 完成度: 98%
@@ -12,7 +44,7 @@
 | magi-app | https://magi-app-398890937507.asia-northeast1.run.app | 1.0 | 5AI質問応答 |
 | magi-ac | https://magi-ac-398890937507.asia-northeast1.run.app | 7.0 | 4AI証券分析+Alpaca SDK+Algo Prediction |
 | magi-mcp | https://magi-mcp-398890937507.asia-northeast1.run.app | 1.0 | Alpaca MCP (43ツール) ★NEW |
-| magi-stg | https://magi-stg-398890937507.asia-northeast1.run.app | 5.0 | 仕様書管理 |
+| magi-stg | https://magi-stg-398890937507.asia-northeast1.run.app | 7.2 | 仕様書管理+アーカイブ |
 | magi-moni | https://magi-moni-398890937507.asia-northeast1.run.app | 1.0 | 監視 |
 | magi-data-collector | https://magi-data-collector-398890937507.asia-northeast1.run.app | 1.0 | データ収集 |
 | magi-decision | https://magi-decision-398890937507.asia-northeast1.run.app | 5.0 | AI全会一致判断 |

@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
-
+// Spec archiver
+import { archiveCurrentSpecs, syncToCurrentBucket, listArchives } from './lib/spec-archiver.js';
 // Document upload module
 import { initCohere, processDocumentUpload } from './lib/document-upload.js';
 
@@ -149,7 +150,43 @@ app.use('/', rolesRouter);
 
 // Register credit management routes
 app.use('/', creditsRouter);
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 仕様書アーカイブAPI
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+// 現在の仕様書をアーカイブ
+app.post('/api/specs/archive', async (req, res) => {
+  try {
+    const { version } = req.body;
+    if (!version) {
+      return res.status(400).json({ error: 'version is required' });
+    }
+    const result = await archiveCurrentSpecs(version);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 最新仕様書をCloud Storage current/に同期
+app.post('/api/specs/sync', async (req, res) => {
+  try {
+    const result = await syncToCurrentBucket();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// アーカイブ一覧取得
+app.get('/api/specs/archives', async (req, res) => {
+  try {
+    const result = await listArchives();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 仕様書配信API（新規追加）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
