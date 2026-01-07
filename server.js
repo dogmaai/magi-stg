@@ -266,6 +266,7 @@ app.get('/api/specs/all', (req, res) => {
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy',
+    version: '7.2.0',
     service: 'magi-stg',
     specifications_loaded: specifications !== null,
     timestamp: new Date().toISOString()
@@ -931,4 +932,62 @@ app.listen(PORT, function() {
   console.log('    DELETE /api/documents/:id');
   console.log('========================================');
   console.log('');
+});
+
+// ========================================
+// Live Status API - バージョン整合性チェック
+// ========================================
+
+// ========================================
+// Live Status API - バージョン整合性チェック（認証付き）
+// ========================================
+const MAGI_SERVICES = [
+  { name: 'magi-ui', url: 'https://magi-ui-398890937507.asia-northeast1.run.app', specVersion: '1.1.0' },
+  { name: 'magi-app', url: 'https://magi-app-398890937507.asia-northeast1.run.app', specVersion: '3.0.0' },
+  { name: 'magi-ac', url: 'https://magi-ac-398890937507.asia-northeast1.run.app', specVersion: '7.0.0' },
+  { name: 'magi-stg', url: 'https://magi-stg-398890937507.asia-northeast1.run.app', specVersion: '7.2.0' },
+  { name: 'magi-decision', url: 'https://magi-decision-398890937507.asia-northeast1.run.app', specVersion: '5.0.0' },
+  { name: 'magi-executor', url: 'https://magi-executor-398890937507.asia-northeast1.run.app', specVersion: '6.0.0' }
+];
+
+// Identity Token取得（Cloud Run内部通信用）
+async function getIdentityToken(targetUrl) {
+  try {
+    const metadataUrl = `http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=${targetUrl}`;
+    const response = await fetch(metadataUrl, {
+      headers: { 'Metadata-Flavor': 'Google' }
+    });
+    if (response.ok) return await response.text();
+  } catch (e) { /* ローカル環境では失敗 */ }
+  return null;
+}
+
+app.get('/public/live-status', async (req, res) => {
+  const results = await Promise.all(MAGI_SERVICES.map(async (svc) => {
+    try {
+      const token = await getIdentityToken(svc.url);
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 10000);
+      const r = await fetch(svc.url + '/health', { headers, signal: ctrl.signal });
+      const data = await r.json().catch(() => ({}));
+      const actualVersion = data.version || 'unknown';
+      return { 
+        name: svc.name, 
+        status: 'healthy', 
+        actualVersion, 
+        specVersion: svc.specVersion, 
+        match: actualVersion === svc.specVersion 
+      };
+    } catch (e) {
+      return { name: svc.name, status: 'error', error: e.message, specVersion: svc.specVersion, match: false };
+    }
+  }));
+  const gaps = results.filter(r => !r.match && r.status === 'healthy');
+  res.json({ 
+    success: true, 
+    timestamp: new Date().toISOString(), 
+    services: results, 
+    gaps: gaps.map(g => `${g.name}: spec=${g.specVersion}, actual=${g.actualVersion}`)
+  });
 });
