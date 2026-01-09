@@ -56,3 +56,23 @@ const auth = new GoogleAuth();
 const client = await auth.getIdTokenClient(targetUrl);
 const token = await client.idTokenProvider.fetchIdToken(targetUrl);
 ```
+
+
+## Dashboard 自動売買セクション (v2.0追加)
+
+### Auto Trading カード
+- 監視銘柄リスト表示
+- BUY/SELL閾値表示
+- 「Run Auto Trade Now」ボタン（手動トリガー）
+- 分析結果のリアルタイム表示
+- 投票結果（BUY/HOLD/SELL）の可視化
+
+### Auto Trade Schedule カード
+- スケジュール情報表示
+- 実行時間帯: 14:30-21:30 EST
+- 実行曜日: Mon-Fri
+- ステータス表示
+
+### 新規API連携
+- `GET /api/magi-ac/api/auto-trade/config` - 設定取得
+- `POST /api/magi-ac/api/auto-trade` - 手動実行

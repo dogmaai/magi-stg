@@ -2,12 +2,12 @@
 
 ## 概要
 - **目的**: 証券分析・投資判断システム + アルゴリズム行動予測
-- **バージョン**: 7.0 (Algo Prediction System)
+- **バージョン**: 7.2 (Algo Prediction System)
 - **AI数**: 5つ (投資判断4 + 文書解析1) - 全て正常動作確認済み
 - **デプロイ**: Cloud Run
 - **URL**: https://magi-ac-398890937507.asia-northeast1.run.app
 - **ポート**: 8888
-- **更新日**: 2026-01-03
+- **更新日**: 2026-01-09
 
 ## AI構成
 
@@ -737,3 +737,48 @@ GROUP BY ai_recommendation
 - ✅ Phase 1完了（1月）: 基盤構築
 - ⏳ Phase 2進行中（2月）: データ蓄積
 - ⏳ Phase 3予定（3月）: 精度検証
+
+
+## 自動売買機能 (Auto Trading)
+
+### 概要
+- **エンドポイント**: `/api/auto-trade` (POST), `/api/auto-trade/config` (GET)
+- **実行方式**: Cloud Scheduler による定期実行
+- **スケジュール**: 平日 14:30-21:30 EST (NY市場時間)
+
+### 設定
+| 項目 | 値 | 説明 |
+|------|-----|------|
+| watchList | AAPL, NVDA, GOOGL, MSFT, TSLA | 監視銘柄 |
+| qtyPerTrade | 1 | 1回の取引株数 |
+| buyThreshold | 4 | BUY判断に必要なAI票数（全会一致） |
+| sellThreshold | 3 | SELL判断に必要なAI票数 |
+
+### 処理フロー
+1. Cloud Scheduler がトリガー（毎時）
+2. 監視銘柄ごとに4AI分析を実行
+3. 投票結果を集計
+4. BUY閾値達成 & 未保有 → 買い注文
+5. SELL閾値達成 & 保有中 → 売り注文
+6. Alpaca Paper Trading で執行
+
+### Cloud Scheduler 設定
+- **ジョブ名**: magi-auto-trade-hourly
+- **リージョン**: asia-northeast1
+- **認証**: OIDC (cloud-scheduler-invoker SA)
+- **タイムゾーン**: America/New_York
+
+### レスポンス例
+```json
+{
+  "ok": true,
+  "data": {
+    "timestamp": "2026-01-09T04:09:11.798Z",
+    "analyzed": [
+      {"symbol": "AAPL", "votes": {"BUY": 2, "HOLD": 2, "SELL": 0}}
+    ],
+    "orders": [],
+    "errors": []
+  }
+}
+```

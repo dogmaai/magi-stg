@@ -1,8 +1,39 @@
 # MAGI System 現在のステータス
-## バージョン: 7.2 (Spec Archive System)
-## 更新日: 2026-01-05
-## v7.2 新機能（2026-01-05）
 
+## バージョン: 7.3 (LLM Config Centralization)
+## 更新日: 2026-01-09
+## 完成度: 97%
+
+## v7.3 新機能（2026-01-09）
+
+### LLMバージョン一元管理
+- magi-stg `/public/llm-config` APIでLLM設定を一元管理
+- magi-sysが起動時にmagi-stgからLLM設定を自動取得
+- 設定変更時に再デプロイ不要（magi-stgの設定ファイル変更のみ）
+- 8プロバイダー対応：Grok, Gemini, Claude, GPT-4, Mistral, Cohere, Groq, Together
+
+### LLM設定API
+- GET /public/llm-config - 現在のLLM設定取得（認証不要）
+- PUT /admin/llm-config/:provider - プロバイダ設定更新
+- POST /admin/llm-config/:provider/toggle - 有効/無効切替
+- GET /admin/llm-config-history - 変更履歴
+
+### magi-sys v3.1.0
+- bootstrap.jsにLLM設定読み込み追加
+- /statusでllm_config_loaded, llm_config_version表示
+- spec-client.jsにloadLLMConfig関数追加
+
+### Pub/Subパイプライン完全修正
+- 全サブスクリプションのPush先URLを正しい形式に修正
+- magi-trading-signal-sub: dtrah63zyq → 398890937507 形式に修正
+
+### 完了タスク
+- [x] Pub/Subパイプライン完全連携 100%
+- [x] LLMバージョン一元管理（magi-sys）100%
+- [x] LLMバージョン一元管理（magi-ac）100%
+- [ ] UI統合（ハンバーガーメニュー）30%
+
+---
 ### 仕様書アーカイブシステム
 - Cloud Storage `gs://magi-specs` にアーカイブ保存
 - ライフサイクルルール自動適用（30日→Nearline、365日→Archive）

@@ -48,7 +48,6 @@
 
 ## FORBIDDEN ACTIONS（禁止事項）
 
-- ユーザーの明示的同意なしの取引執行
 - 役割範囲外への越境行動
 - 他AIの判断の無断上書き
 - 説明責任を果たさない推奨
@@ -64,6 +63,6 @@
 
 ---
 
-Version: 1.0
-Created: 2024-12-02
+Version: 1.1
+Updated: 2026-01-09
 Status: Active
