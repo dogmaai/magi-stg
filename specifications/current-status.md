@@ -1,5 +1,59 @@
 # MAGI System 現在のステータス
 
+## バージョン: 7.4 (Risk Manager Integration)
+## 更新日: 2026-01-09
+## 完成度: 95%
+
+## v7.4 新機能（2026-01-09）
+
+### magi-risk-manager v1.0.0 ★NEW
+- リスク管理サービス新規追加
+- 6つのリスクルール自動検証
+  - 単一取引リスク 0.5%
+  - 単一銘柄ポジション上限 25%
+  - セクター集中度 15%
+  - 日次取引回数 20回
+  - 日次損失上限 2%
+  - 週次損失上限 5%
+- キルスイッチ（緊急停止）機能
+  - Level 1: 全取引停止
+  - Level 2: 新規BUYのみブロック
+- ブラケット価格自動計算（SL -3%, TP +6%）
+
+### magi-executor v6.1.0
+- Risk Manager連携追加
+- 注文実行前にリスク検証を自動実行
+- 検証失敗時は注文を自動拒否
+
+### E2Eテスト完了
+- magi-ac → magi-decision → magi-risk-manager → magi-executor
+- パイプライン全体の動作確認済み
+
+### サービス一覧（11サービス）
+
+| サービス | URL | バージョン | 機能 |
+|---------|-----|-----------|------|
+| magi-ui | https://magi-ui-398890937507.asia-northeast1.run.app | 1.1 | 統合UI |
+| magi-app | https://magi-app-398890937507.asia-northeast1.run.app | 1.0 | 5AI質問応答 |
+| magi-ac | https://magi-ac-398890937507.asia-northeast1.run.app | 7.1 | 4AI証券分析 |
+| magi-decision | https://magi-decision-398890937507.asia-northeast1.run.app | 5.0 | AI合議判断 |
+| magi-risk-manager | https://magi-risk-manager-398890937507.asia-northeast1.run.app | 1.0.0 | リスク管理 ★NEW |
+| magi-executor | https://magi-executor-398890937507.asia-northeast1.run.app | 6.1.0 | 自動売買 |
+| magi-stg | https://magi-stg-398890937507.asia-northeast1.run.app | 7.2 | 仕様書管理 |
+| magi-moni | https://magi-moni-398890937507.asia-northeast1.run.app | 1.0 | 監視 |
+| magi-data-collector | https://magi-data-collector-398890937507.asia-northeast1.run.app | 1.0 | データ収集 |
+| magi-websocket | https://magi-websocket-398890937507.asia-northeast1.run.app | 1.3 | リアルタイム配信 |
+| magi-mcp | https://magi-mcp-398890937507.asia-northeast1.run.app | 1.0 | Alpaca MCP |
+
+### 完了タスク
+- [x] magi-risk-manager 実装・デプロイ 100%
+- [x] magi-executor Risk Manager連携 100%
+- [x] E2Eテスト完了 100%
+- [x] Pub/Subパイプライン完全連携 100%
+- [x] LLMバージョン一元管理 100%
+- [ ] UI統合（ハンバーガーメニュー）30%
+
+---
 ## バージョン: 7.3 (LLM Config Centralization)
 ## 更新日: 2026-01-09
 ## 完成度: 97%
