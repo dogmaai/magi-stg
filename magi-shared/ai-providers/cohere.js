@@ -69,4 +69,28 @@ export class CohereProvider extends BaseAIProvider {
 
     return body.results || [];
   }
+
+  /**
+   * Embed API - テキストをベクトル化
+   */
+  async embed(texts, inputType = 'search_document') {
+    const response = await fetchWithRetry('https://api.cohere.ai/v1/embed', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'embed-multilingual-v3.0',
+        texts: Array.isArray(texts) ? texts : [texts],
+        input_type: inputType,
+        truncate: 'END'
+      })
+    });
+    const body = await response.json();
+    if (!response.ok) {
+      handleAPIError(this.name, response, body);
+    }
+    return body.embeddings || [];
+  }
 }
