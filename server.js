@@ -25,6 +25,9 @@ import { roleManager } from './src/services/role-manager.js';
 import creditsRouter from './src/routes/credits.js';
 import { creditManager } from './src/services/credit-manager.js';
 
+// Security middleware
+import { securityMiddleware, getSecurityStatus } from './lib/security-middleware.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SPEC_DIR = path.join(__dirname, 'specifications');
@@ -143,6 +146,9 @@ ${prompt}
 }
 
 app.use(express.json());
+
+// === Security Middleware (rate limiting, anomaly detection, IP logging) ===
+app.use(securityMiddleware);
 app.use(express.static('public'));
 
 // Register role management routes
@@ -263,6 +269,15 @@ app.get('/api/specs/all', (req, res) => {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // ヘルスチェック
+app.get('/admin/security-status', (req, res) => {
+  try {
+    const status = getSecurityStatus();
+    res.json({ ok: true, security: status });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy',
