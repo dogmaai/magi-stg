@@ -440,7 +440,10 @@ function findConsensus(responses) {
 app.get('/public/specs', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
-    const files = fs.readdirSync(SPEC_DIR);
+    const files = fs.readdirSync(SPEC_DIR).filter(file => {
+      const fullPath = path.join(SPEC_DIR, file);
+      return fs.statSync(fullPath).isFile();
+    });
     const allSpecs = {};
     files.forEach(file => {
       const content = fs.readFileSync(path.join(SPEC_DIR, file), 'utf-8');
