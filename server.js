@@ -117,12 +117,26 @@ let providers = {};
 // ローカルファイルから仕様書読み込み
 function loadLocalSpecifications() {
   try {
-    const specs = {
-      systemOverview: fs.readFileSync(path.join(SPEC_DIR, 'system-overview.md'), 'utf-8'),
-      magiSysSpec: fs.readFileSync(path.join(SPEC_DIR, 'magi-sys-spec.md'), 'utf-8'),
-      magiAcSpec: fs.readFileSync(path.join(SPEC_DIR, 'magi-ac-spec.md'), 'utf-8'),
-      aiModels: JSON.parse(fs.readFileSync(path.join(SPEC_DIR, 'ai-models-config.json'), 'utf-8'))
+    const readFile = (relPath) => {
+      const fullPath = path.join(SPEC_DIR, relPath);
+      return fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf-8') : null;
     };
+    const specs = {
+      readme: readFile('README.md'),
+      systemOverview: readFile('system/overview.md'),
+      guardSystem: readFile('system/guard-system.md'),
+      dataSchema: readFile('system/data-schema.md'),
+      agentsGuide: readFile('agents/AGENTS.md'),
+      llmUnits: readFile('agents/llm-units.md'),
+      jobCatalog: readFile('jobs/job-catalog.md'),
+      aiModels: (() => {
+        const p = path.join(SPEC_DIR, 'ai-models-config.json');
+        return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf-8')) : null;
+      })()
+    };
+    // 読み込めたファイル数をログ
+    const loaded = Object.entries(specs).filter(([, v]) => v !== null).map(([k]) => k);
+    console.log(`[SPECS] Loaded: ${loaded.join(', ')}`);
     return specs;
   } catch (error) {
     console.error('Failed to load specifications:', error.message);
@@ -435,7 +449,7 @@ app.get('/public/specs', (req, res) => {
     res.json({
       success: true,
       source: 'magi-stg',
-      version: '4.0',
+      version: '4.2',
       count: files.length,
       specifications: allSpecs,
       timestamp: new Date().toISOString()
