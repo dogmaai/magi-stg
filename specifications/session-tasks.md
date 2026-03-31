@@ -5,6 +5,14 @@
 
 ---
 
+## セッション開始プロトコル
+
+Junが以下をセッション冒頭に実行してClaudeに貼り付ける：
+
+    cat ~/magi-stg/specifications/session-tasks.md
+
+---
+
 ## 現在のシステム状態
 
 - magi-stg /public/specs: 正常 (200 OK, count:13)
@@ -18,6 +26,7 @@
 
 - [x] magi-stg 500エラー修正 (2026-03-31) - bootstrap.js追加、package.json修正
 - [x] embed gap解消 - sync_embeddings.mjs、867件中199件embed完了
+- [x] session-tasks.md 作成・運用開始 (2026-03-31)
 
 ---
 
@@ -37,14 +46,7 @@
 
 ---
 
-## 次回セッション確認事項
-
-- 残タスクの優先順位をJunと確認
-- Optuna再最適化のトリガー条件（150 WIN+LOSE）到達状況
-
----
-
 ## ルール
 
-- セッション開始時: このファイルを読んで状況をシンクする
-- セッション終了時: 完了タスクを[x]に、新規タスクを追記し、APMにpushさせる
+- セッション開始時: Junが cat ~/magi-stg/specifications/session-tasks.md を実行して内容をClaudeに貼り付ける
+- セッション終了時: Claudeが更新内容を出力 → APMがGitHub pushする
