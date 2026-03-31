@@ -214,7 +214,9 @@ app.get('/api/specs/archives', async (req, res) => {
 // 仕様書一覧取得
 app.get('/api/specs', (req, res) => {
   try {
-    const files = fs.readdirSync(SPEC_DIR);
+    const files = fs.readdirSync(SPEC_DIR).filter(f => {
+      return fs.statSync(path.join(SPEC_DIR, f)).isFile();
+    });
     const specs = files.map(file => ({
       filename: file,
       path: `/api/spec/${file}`
@@ -259,7 +261,9 @@ app.get('/api/spec/:filename', (req, res) => {
 // 全仕様書を一括取得
 app.get('/api/specs/all', (req, res) => {
   try {
-    const files = fs.readdirSync(SPEC_DIR);
+    const files = fs.readdirSync(SPEC_DIR).filter(f => {
+      return fs.statSync(path.join(SPEC_DIR, f)).isFile();
+    });
     const allSpecs = {};
     
     files.forEach(file => {
