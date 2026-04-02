@@ -466,6 +466,41 @@ app.get('/public/specs', (req, res) => {
   }
 });
 
+app.get('/public/llm-health', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Content-Type', 'application/json');
+  try {
+    const { BigQuery } = await import('@google-cloud/bigquery');
+    const bigquery = new BigQuery();
+
+    const query = `
+      SELECT
+        unit_name AS unit,
+        provider,
+        model,
+        status,
+        latency_ms,
+        error_code,
+        error_message,
+        checked_at
+      FROM (
+        SELECT *,
+          ROW_NUMBER() OVER (PARTITION BY provider ORDER BY checked_at DESC) as rn
+        FROM \`screen-share-459802.magi_core.llm_health_checks\`
+      )
+      WHERE rn = 1
+      ORDER BY provider
+    `;
+
+    const [rows] = await bigquery.query({ query, location: 'US' });
+
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/public/overview', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
@@ -961,6 +996,7 @@ app.listen(PORT, function() {
   console.log('    /public/task');
   console.log('    /public/llm-config');
   console.log('    /public/weights');
+  console.log('    /public/llm-health');
   console.log('  Document API:');
   console.log('    POST   /api/documents/upload');
   console.log('    GET    /api/documents/list');
