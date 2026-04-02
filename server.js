@@ -660,6 +660,56 @@ app.get('/public/llm-config', (req, res) => {
   }
 });
 
+// LLMモデル情報API（静的データ）
+app.get('/public/llm-models', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Content-Type', 'application/json');
+  
+  const modelsData = {
+    "updated_at": "2026-04-02",
+    "providers": {
+      "mistral": {
+        "unit": "SOPHIA-5",
+        "active_model": "mistral-small-latest",
+        "available_models": ["mistral-small-latest", "mistral-large-latest", "mistral-medium-latest"]
+      },
+      "google": {
+        "unit": "MELCHIOR-1",
+        "active_model": "gemini-2.0-flash",
+        "available_models": ["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"]
+      },
+      "groq": {
+        "unit": "ANIMA",
+        "active_model": "llama-3.3-70b-versatile",
+        "available_models": ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"]
+      },
+      "deepseek": {
+        "unit": "CASPER",
+        "active_model": "deepseek-chat",
+        "available_models": ["deepseek-chat", "deepseek-reasoner"]
+      },
+      "together": {
+        "unit": "ORACLE",
+        "active_model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "available_models": ["meta-llama/Llama-3.3-70B-Instruct-Turbo", "meta-llama/Llama-3.1-8B-Instruct-Turbo"]
+      },
+      "qwen": {
+        "unit": "MINERVA",
+        "active_model": "qwen-plus",
+        "available_models": ["qwen-plus", "qwen-max", "qwen-turbo"]
+      },
+      "xai": {
+        "unit": "BALTHASAR",
+        "active_model": "grok-4-1-fast",
+        "available_models": ["grok-4-1-fast", "grok-3", "grok-3-fast"]
+      }
+    }
+  };
+  
+  res.json(modelsData);
+});
+
 // サーバー起動
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
