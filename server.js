@@ -501,6 +501,78 @@ app.get('/public/llm-health', async (req, res) => {
   }
 });
 
+// LLMモデルデータ（静的）
+const LLM_MODELS = {
+  mistral: {
+    unit: 'SOPHIA-5',
+    active_model: 'mistral-small-latest',
+    available_models: [
+      { id: 'mistral-small-latest', status: 'active' },
+      { id: 'mistral-large-latest', status: 'active' },
+      { id: 'mistral-medium-latest', status: 'active' },
+      { id: 'mistral-small-2402', status: 'deprecated' },
+      { id: 'mistral-tiny', status: 'deprecated' }
+    ]
+  },
+  google: {
+    unit: 'MELCHIOR-1',
+    active_model: 'gemini-2.0-flash',
+    available_models: [
+      { id: 'gemini-2.0-flash', status: 'active' },
+      { id: 'gemini-1.5-pro', status: 'active' },
+      { id: 'gemini-1.5-flash', status: 'active' },
+      { id: 'gemini-1.0-pro', status: 'deprecated' }
+    ]
+  },
+  groq: {
+    unit: 'ANIMA',
+    active_model: 'llama-3.3-70b-versatile',
+    available_models: [
+      { id: 'llama-3.3-70b-versatile', status: 'active' },
+      { id: 'llama-3.1-8b-instant', status: 'active' },
+      { id: 'mixtral-8x7b-32768', status: 'active' },
+      { id: 'llama-3.1-70b-versatile', status: 'deprecated' }
+    ]
+  },
+  deepseek: {
+    unit: 'CASPER',
+    active_model: 'deepseek-chat',
+    available_models: [
+      { id: 'deepseek-chat', status: 'active' },
+      { id: 'deepseek-reasoner', status: 'active' }
+    ]
+  },
+  together: {
+    unit: 'ORACLE',
+    active_model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
+    available_models: [
+      { id: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', status: 'active' },
+      { id: 'meta-llama/Llama-3.1-8B-Instruct-Turbo', status: 'active' },
+      { id: 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8', status: 'deprecated' }
+    ]
+  },
+  qwen: {
+    unit: 'MINERVA',
+    active_model: 'qwen-plus',
+    available_models: [
+      { id: 'qwen-plus', status: 'active' },
+      { id: 'qwen-max', status: 'active' },
+      { id: 'qwen-turbo', status: 'active' }
+    ]
+  },
+  xai: {
+    unit: 'BALTHASAR',
+    active_model: 'grok-4-1-fast',
+    available_models: [
+      { id: 'grok-4-1-fast', status: 'active' },
+      { id: 'grok-3', status: 'active' },
+      { id: 'grok-3-fast', status: 'active' },
+      { id: 'grok-2-1212', status: 'deprecated' },
+      { id: 'grok-2', status: 'deprecated' }
+    ]
+  }
+};
+
 // LLM Health UI（HTMLダッシュボード）
 app.get('/llm-health-ui', async (req, res) => {
   res.setHeader('Content-Type', 'text/html');
@@ -530,7 +602,7 @@ app.get('/llm-health-ui', async (req, res) => {
     const [rows] = await bigquery.query({ query, location: 'US' });
 
     const now = new Date();
-    const lastUpdated = rows.length > 0 ? new Date(rows[0].checked_at).toLocaleString() : 'N/A';
+    const lastUpdated = rows.length > 0 ? new Date(rows[0].checked_at?.value ?? rows[0].checked_at).toLocaleString() : 'N/A';
 
     const html = `
 <!DOCTYPE html>
@@ -705,6 +777,89 @@ app.get('/llm-health-ui', async (req, res) => {
       border-radius: 6px;
       white-space: pre-wrap;
     }
+    
+    /* Models Panel */
+    .models-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      padding: 20px;
+      max-height: 60vh;
+      overflow-y: auto;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+      display: none;
+    }
+    
+    .models-panel.show {
+      display: block;
+    }
+    
+    .models-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .models-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #000;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    .models-grid {
+      display: grid;
+      gap: 8px;
+    }
+    
+    .model-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+    
+    .model-id {
+      font-family: 'SFMono-Regular', monospace;
+      font-size: 14px;
+      color: #333;
+      flex: 1;
+    }
+    
+    .badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+    
+    .badge-active {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .badge-deprecated {
+      background: #f5f5f5;
+      color: #757575;
+    }
+    
+    .badge-current {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
   </style>
 </head>
 <body>
@@ -721,7 +876,7 @@ app.get('/llm-health-ui', async (req, res) => {
       else if (row.latency_ms >= 1000) latencyColor = '#ff9800';
       
       return `
-        <div class="card ${row.status}">
+        <div class="card ${row.status}" onclick="showModels('${row.provider}')" style="cursor: pointer;">
           <div class="unit">${row.unit}</div>
           <div class="provider">${row.provider}</div>
           <div class="model">${row.model}</div>
@@ -735,6 +890,14 @@ app.get('/llm-health-ui', async (req, res) => {
     }).join('')}
   </div>
   
+  <div id="modelsPanel" class="models-panel">
+    <div class="models-header">
+      <div id="modelsTitle" class="models-title">Provider Models</div>
+      <button class="close-btn" onclick="closeModels()">×</button>
+    </div>
+    <div id="modelsContent" class="models-grid"></div>
+  </div>
+  
   ${rows.filter(r => r.status !== 'ok').length > 0 ? `
     <div class="error-section">
       <div class="error-title">要確認</div>
@@ -746,6 +909,44 @@ app.get('/llm-health-ui', async (req, res) => {
       `).join('')}
     </div>
   ` : ''}
+  
+  <script>
+    const MODELS_DATA = ${JSON.stringify(LLM_MODELS)};
+    
+    function showModels(provider) {
+      const panel = document.getElementById('modelsPanel');
+      const title = document.getElementById('modelsTitle');
+      const content = document.getElementById('modelsContent');
+      
+      const providerData = MODELS_DATA[provider];
+      if (!providerData) return;
+      
+      title.textContent = \`\${providerData.unit} / \${provider}\`;
+      
+      content.innerHTML = providerData.available_models.map(model => {
+        const badges = [];
+        if (model.status === 'active') badges.push('<span class="badge badge-active">active</span>');
+        else badges.push('<span class="badge badge-deprecated">deprecated</span>');
+        
+        if (model.id === providerData.active_model) {
+          badges.push('<span class="badge badge-current">使用中</span>');
+        }
+        
+        return `
+          <div class="model-row">
+            <div class="model-id">${model.id}</div>
+            ${badges.join('')}
+          </div>
+        `;
+      }).join('');
+      
+      panel.classList.add('show');
+    }
+    
+    function closeModels() {
+      document.getElementById('modelsPanel').classList.remove('show');
+    }
+  </script>
 </body>
 </html>
     `;
