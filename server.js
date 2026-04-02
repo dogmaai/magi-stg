@@ -501,6 +501,261 @@ app.get('/public/llm-health', async (req, res) => {
   }
 });
 
+// LLM Health UI（HTMLダッシュボード）
+app.get('/llm-health-ui', async (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  
+  try {
+    const { BigQuery } = await import('@google-cloud/bigquery');
+    const bigquery = new BigQuery();
+
+    const query = `
+      SELECT
+        unit_name AS unit,
+        provider,
+        model,
+        status,
+        latency_ms,
+        error_message,
+        checked_at
+      FROM (
+        SELECT *,
+          ROW_NUMBER() OVER (PARTITION BY provider ORDER BY checked_at DESC) as rn
+        FROM \`screen-share-459802.magi_core.llm_health_checks\`
+      )
+      WHERE rn = 1
+      ORDER BY provider
+    `;
+
+    const [rows] = await bigquery.query({ query, location: 'US' });
+
+    const now = new Date();
+    const lastUpdated = rows.length > 0 ? new Date(rows[0].checked_at).toLocaleString() : 'N/A';
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAGI LLM Health Dashboard</title>
+  <meta http-equiv="refresh" content="300">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #fff;
+      color: #111;
+      padding: 24px;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #000;
+    }
+    
+    .updated {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .refresh-btn {
+      padding: 8px 16px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .card {
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 16px;
+      position: relative;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 4px 0 0 4px;
+    }
+    
+    .card.ok::before {
+      background: #00c853;
+    }
+    
+    .card.error::before {
+      background: #ff1744;
+    }
+    
+    .card.timeout::before {
+      background: #ff9100;
+    }
+    
+    .unit {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #000;
+    }
+    
+    .provider {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    
+    .model {
+      font-size: 13px;
+      font-family: 'SFMono-Regular', monospace;
+      color: #444;
+      background: #f5f5f5;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+    
+    .latency-bar {
+      height: 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      background: #e0e0e0;
+      overflow: hidden;
+    }
+    
+    .latency-inner {
+      height: 100%;
+      border-radius: 4px;
+    }
+    
+    .latency-label {
+      font-size: 12px;
+      color: #666;
+      text-align: right;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+    
+    .status-ok {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .status-error {
+      background: #ffebee;
+      color: #c62828;
+    }
+    
+    .status-timeout {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    
+    .error-section {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    .error-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #d32f2f;
+      margin-bottom: 12px;
+    }
+    
+    .error-message {
+      font-size: 14px;
+      color: #666;
+      background: #f5f5f5;
+      padding: 12px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">MAGI LLM Health Dashboard</div>
+    <div class="updated">Last updated: ${lastUpdated}</div>
+  </div>
+  
+  <div class="grid">
+    ${rows.map(row => {
+      const latencyPercent = Math.min(100, (row.latency_ms || 0) / 20);
+      let latencyColor = '#4caf50';
+      if (row.latency_ms >= 2000) latencyColor = '#f44336';
+      else if (row.latency_ms >= 1000) latencyColor = '#ff9800';
+      
+      return `
+        <div class="card ${row.status}">
+          <div class="unit">${row.unit}</div>
+          <div class="provider">${row.provider}</div>
+          <div class="model">${row.model}</div>
+          <div class="latency-bar">
+            <div class="latency-inner" style="width: ${latencyPercent}%; background: ${latencyColor}"></div>
+          </div>
+          <div class="latency-label">${row.latency_ms || 0}ms</div>
+          <div class="status-badge status-${row.status}">${row.status.toUpperCase()}</div>
+        </div>
+      `;
+    }).join('')}
+  </div>
+  
+  ${rows.filter(r => r.status !== 'ok').length > 0 ? `
+    <div class="error-section">
+      <div class="error-title">要確認</div>
+      ${rows.filter(r => r.status !== 'ok').map(row => `
+        <div style="margin-bottom: 16px;">
+          <div style="font-weight: 600; margin-bottom: 4px;">${row.unit} (${row.provider})</div>
+          <div class="error-message">${row.error_message || 'No error details'}</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : ''}
+</body>
+</html>
+    `;
+    
+    res.send(html);
+  } catch (error) {
+    res.status(500).send(`<html><body><h1>Error</h1><p>${error.message}</p></body></html>`);
+  }
+});
+
 app.get('/public/overview', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   try {
