@@ -10,7 +10,7 @@ export class GeminiProvider extends BaseAIProvider {
   constructor(apiKey, options = {}) {
     super({
       name: 'Gemini',
-      model: options.model || 'gemini-2.0-flash-exp',
+      model: options.model || 'gemini-3-flash-preview',
       apiKey,
       endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
       timeout: options.timeout || 30000,

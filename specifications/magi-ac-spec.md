@@ -20,7 +20,7 @@
 - **Output**: BUY/HOLD/SELL + 信頼度 + 理由
 
 #### Unit-M1 (Gemini) - 論理的数値分析
-- **Model**: gemini-2.0-flash-exp
+- **Model**: gemini-3-flash-preview
 - **視点**: PER, ROE, 財務指標、バリュエーション
 - **判断**: 財務健全性、収益成長率
 - **Output**: BUY/HOLD/SELL + 信頼度 + 理由

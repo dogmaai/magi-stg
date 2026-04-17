@@ -21,7 +21,7 @@
 
 ### MELCHIOR-1 (Gemini / Google)
 - **役割**: 論理的・科学的分析
-- **Model**: gemini-2.0-flash-exp
+- **Model**: gemini-3-flash-preview
 - **Temperature**: 0.2（正確性重視）
 - **得意**: データ分析、科学的検証
 - **システムプロンプト**:

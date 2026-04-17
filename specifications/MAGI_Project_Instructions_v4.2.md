@@ -25,7 +25,7 @@
 | Job Name | LLM Provider | Model | Unit Name | スケジュール(UTC) |
 |---|---|---|---|---|
 | magi-core-job | Mistral | mistral-small-latest | SOPHIA-5 | 14:30 月-金 |
-| magi-core-gemini | Google | gemini-2.0-flash | MELCHIOR-1 | 15:00 月-金 |
+| magi-core-gemini | Google | gemini-3-flash-preview | MELCHIOR-1 | 15:00 月-金 |
 | magi-core-groq | Groq | llama-3.3-70b-versatile | ANIMA | 16:00 月-金 |
 | magi-core-deepseek | DeepSeek | deepseek-chat | CASPER | 17:00 月-金 |
 | magi-core-qwen | Qwen | qwen-plus | QWEN | 18:00 月-金 |

@@ -88,7 +88,7 @@ let providers = {};
   }
   if (process.env.GEMINI_API_KEY) {
     providers.gemini = new GeminiProvider(process.env.GEMINI_API_KEY, {
-      model: process.env.GEMINI_MODEL || 'gemini-2.0-flash-exp'
+      model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview'
     });
   }
   if (process.env.ANTHROPIC_API_KEY) {
@@ -516,11 +516,13 @@ const LLM_MODELS = {
   },
   google: {
     unit: 'MELCHIOR-1',
-    active_model: 'gemini-2.0-flash',
+    active_model: 'gemini-3-flash-preview',
     available_models: [
-      { id: 'gemini-2.0-flash', status: 'active' },
-      { id: 'gemini-1.5-pro', status: 'active' },
-      { id: 'gemini-1.5-flash', status: 'active' },
+      { id: 'gemini-3-flash-preview', status: 'active' },
+      { id: 'gemini-3.1-pro-preview', status: 'active' },
+      { id: 'gemini-2.0-flash', status: 'deprecated' },
+      { id: 'gemini-1.5-pro', status: 'deprecated' },
+      { id: 'gemini-1.5-flash', status: 'deprecated' },
       { id: 'gemini-1.0-pro', status: 'deprecated' }
     ]
   },
@@ -1132,8 +1134,8 @@ app.get('/public/llm-models', (req, res) => {
       },
       "google": {
         "unit": "MELCHIOR-1",
-        "active_model": "gemini-2.0-flash",
-        "available_models": ["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"]
+        "active_model": "gemini-3-flash-preview",
+        "available_models": ["gemini-3-flash-preview", "gemini-3.1-pro-preview"]
       },
       "groq": {
         "unit": "ANIMA",
