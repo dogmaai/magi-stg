@@ -19,7 +19,7 @@
       "fallback_chains": ["gemini", "mistral"]
     },
     "gemini": {
-      "model": "gemini-2.0-flash-exp",
+      "model": "gemini-3-flash-preview",
       "endpoint": "https://generativelanguage.googleapis.com/v1beta/models",
       "temperature": 0.2,
       "max_tokens": 2048,

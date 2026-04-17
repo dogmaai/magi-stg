@@ -15,7 +15,7 @@
         "MELCHIOR-1": {
           "description": "論理的・科学的分析",
           "provider": "gemini",
-          "model": "gemini-2.0-flash-exp",
+          "model": "gemini-3-flash-preview",
           "fallback_provider": "openai",
           "fallback_model": "gpt-4o-mini",
           "enabled": true
@@ -25,7 +25,7 @@
           "provider": "anthropic",
           "model": "claude-sonnet-4-20250514",
           "fallback_provider": "gemini",
-          "fallback_model": "gemini-2.0-flash-exp",
+          "fallback_model": "gemini-3-flash-preview",
           "enabled": true
         },
         "MARY-4": {
@@ -60,7 +60,7 @@
         "Unit-M1": {
           "description": "論理的数値分析",
           "provider": "gemini",
-          "model": "gemini-2.0-flash-exp",
+          "model": "gemini-3-flash-preview",
           "fallback_provider": "openai",
           "fallback_model": "gpt-4o-mini",
           "enabled": true
@@ -70,7 +70,7 @@
           "provider": "anthropic",
           "model": "claude-sonnet-4-20250514",
           "fallback_provider": "gemini",
-          "fallback_model": "gemini-2.0-flash-exp",
+          "fallback_model": "gemini-3-flash-preview",
           "enabled": true
         },
         "Unit-R4": {
@@ -111,7 +111,7 @@
     {
       "id": "gemini",
       "name": "Google (Gemini)",
-      "models": ["gemini-2.0-flash-exp", "gemini-1.5-pro", "gemini-1.5-flash"]
+      "models": ["gemini-3-flash-preview", "gemini-3.1-pro-preview"]
     },
     {
       "id": "mistral",
