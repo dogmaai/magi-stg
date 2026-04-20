@@ -59,7 +59,8 @@ command -v python3 >/dev/null 2>&1 || die "python3 is not installed (used for JS
 # === Load env ===
 if [[ -f "$ENV_FILE" ]]; then
   # Warn (don't fail) if perms are too loose; secrets should be 600.
-  if [[ "$(stat -c '%a' "$ENV_FILE" 2>/dev/null || stat -f '%A' "$ENV_FILE")" != "600" ]]; then
+  # GNU stat (Linux) uses -c '%a', BSD stat (macOS/FreeBSD) uses -f '%Lp' for octal perms.
+  if [[ "$(stat -c '%a' "$ENV_FILE" 2>/dev/null || stat -f '%Lp' "$ENV_FILE" 2>/dev/null)" != "600" ]]; then
     log "WARN: $ENV_FILE is not chmod 600 (contains secrets); run: chmod 600 $ENV_FILE"
   fi
   set -a
