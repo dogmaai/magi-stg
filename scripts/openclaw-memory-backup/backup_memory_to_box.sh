@@ -28,21 +28,11 @@ LATEST_NAME="openclaw_memory_latest.sqlite"
 
 mkdir -p "$BACKUP_DIR"
 
-# Cumulative list of temp files; single EXIT trap cleans them all even on errors.
-TEMP_FILES=()
-cleanup() {
-  if ((${#TEMP_FILES[@]})); then
-    rm -f "${TEMP_FILES[@]}" 2>/dev/null || true
-  fi
-}
+# Single temp dir; wholesale removal on exit avoids subshell-scoping issues
+# with per-file tracking arrays (command substitution runs in a subshell).
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/openclaw-backup.XXXXXX")"
+cleanup() { rm -rf "$TMP_DIR"; }
 trap cleanup EXIT
-
-mktemp_tracked() {
-  local f
-  f="$(mktemp)"
-  TEMP_FILES+=("$f")
-  printf '%s' "$f"
-}
 
 log() {
   local msg
@@ -106,7 +96,7 @@ cp "$BACKUP_FILE" "$LATEST_FILE"
 log "snapshot created: $BACKUP_FILE ($(du -h "$BACKUP_FILE" | awk '{print $1}'))"
 
 # === Step 2: Acquire Box access token (Client Credentials Grant) ===
-TOKEN_RESP_FILE="$(mktemp_tracked)"
+TOKEN_RESP_FILE="$TMP_DIR/token.json"
 
 HTTP_CODE=$(curl -sS -o "$TOKEN_RESP_FILE" -w '%{http_code}' \
   -X POST "https://api.box.com/oauth2/token" \
@@ -130,7 +120,7 @@ EXISTING_FILE_ID=""
 OFFSET=0
 LIMIT=1000
 while :; do
-  LIST_RESP_FILE="$(mktemp_tracked)"
+  LIST_RESP_FILE="$TMP_DIR/list.$OFFSET.json"
   HTTP_CODE=$(curl -sS -o "$LIST_RESP_FILE" -w '%{http_code}' \
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     "https://api.box.com/2.0/folders/${BOX_FOLDER_ID}/items?fields=id,name,type&limit=${LIMIT}&offset=${OFFSET}") \
@@ -165,7 +155,7 @@ PY
 done
 
 # === Step 4: Upload (new version if exists, else create) ===
-UPLOAD_RESP_FILE="$(mktemp_tracked)"
+UPLOAD_RESP_FILE="$TMP_DIR/upload.json"
 if [[ -n "$EXISTING_FILE_ID" ]]; then
   HTTP_CODE=$(curl -sS -o "$UPLOAD_RESP_FILE" -w '%{http_code}' \
     -X POST "https://upload.box.com/api/2.0/files/${EXISTING_FILE_ID}/content" \
