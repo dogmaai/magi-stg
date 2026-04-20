@@ -28,6 +28,22 @@ LATEST_NAME="openclaw_memory_latest.sqlite"
 
 mkdir -p "$BACKUP_DIR"
 
+# Cumulative list of temp files; single EXIT trap cleans them all even on errors.
+TEMP_FILES=()
+cleanup() {
+  if ((${#TEMP_FILES[@]})); then
+    rm -f "${TEMP_FILES[@]}" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT
+
+mktemp_tracked() {
+  local f
+  f="$(mktemp)"
+  TEMP_FILES+=("$f")
+  printf '%s' "$f"
+}
+
 log() {
   local msg
   msg="[$(date '+%Y-%m-%d %H:%M:%S%z')] $*"
@@ -90,8 +106,7 @@ cp "$BACKUP_FILE" "$LATEST_FILE"
 log "snapshot created: $BACKUP_FILE ($(du -h "$BACKUP_FILE" | awk '{print $1}'))"
 
 # === Step 2: Acquire Box access token (Client Credentials Grant) ===
-TOKEN_RESP_FILE="$(mktemp)"
-trap 'rm -f "$TOKEN_RESP_FILE"' EXIT
+TOKEN_RESP_FILE="$(mktemp_tracked)"
 
 HTTP_CODE=$(curl -sS -o "$TOKEN_RESP_FILE" -w '%{http_code}' \
   -X POST "https://api.box.com/oauth2/token" \
@@ -115,16 +130,14 @@ EXISTING_FILE_ID=""
 OFFSET=0
 LIMIT=1000
 while :; do
-  LIST_RESP_FILE="$(mktemp)"
+  LIST_RESP_FILE="$(mktemp_tracked)"
   HTTP_CODE=$(curl -sS -o "$LIST_RESP_FILE" -w '%{http_code}' \
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     "https://api.box.com/2.0/folders/${BOX_FOLDER_ID}/items?fields=id,name,type&limit=${LIMIT}&offset=${OFFSET}") \
-    || { rm -f "$LIST_RESP_FILE"; die "curl failed (folder listing)"; }
+    || die "curl failed (folder listing)"
 
   if [[ "$HTTP_CODE" != "200" ]]; then
-    local_body="$(head -c 500 "$LIST_RESP_FILE")"
-    rm -f "$LIST_RESP_FILE"
-    die "folder listing returned HTTP $HTTP_CODE: $local_body"
+    die "folder listing returned HTTP $HTTP_CODE: $(head -c 500 "$LIST_RESP_FILE")"
   fi
 
   FOUND_ID="$(LIST_JSON="$LIST_RESP_FILE" python3 - "$LATEST_NAME" <<'PY'
@@ -139,7 +152,6 @@ for e in data.get("entries", []):
 PY
 )"
   TOTAL_COUNT="$(python3 -c "import sys,json; print(json.load(sys.stdin).get('total_count',0))" < "$LIST_RESP_FILE")"
-  rm -f "$LIST_RESP_FILE"
 
   if [[ -n "$FOUND_ID" ]]; then
     EXISTING_FILE_ID="$FOUND_ID"
@@ -153,14 +165,14 @@ PY
 done
 
 # === Step 4: Upload (new version if exists, else create) ===
-UPLOAD_RESP_FILE="$(mktemp)"
+UPLOAD_RESP_FILE="$(mktemp_tracked)"
 if [[ -n "$EXISTING_FILE_ID" ]]; then
   HTTP_CODE=$(curl -sS -o "$UPLOAD_RESP_FILE" -w '%{http_code}' \
     -X POST "https://upload.box.com/api/2.0/files/${EXISTING_FILE_ID}/content" \
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     -F "attributes={\"name\":\"${LATEST_NAME}\"}" \
     -F "file=@${LATEST_FILE}") \
-    || { rm -f "$UPLOAD_RESP_FILE"; die "curl failed (upload new version)"; }
+    || die "curl failed (upload new version)"
   ACTION="updated (file_id=${EXISTING_FILE_ID})"
 else
   HTTP_CODE=$(curl -sS -o "$UPLOAD_RESP_FILE" -w '%{http_code}' \
@@ -168,18 +180,15 @@ else
     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
     -F "attributes={\"name\":\"${LATEST_NAME}\",\"parent\":{\"id\":\"${BOX_FOLDER_ID}\"}}" \
     -F "file=@${LATEST_FILE}") \
-    || { rm -f "$UPLOAD_RESP_FILE"; die "curl failed (upload new)"; }
+    || die "curl failed (upload new)"
   ACTION="created"
 fi
 
 if [[ "$HTTP_CODE" != "201" && "$HTTP_CODE" != "200" ]]; then
-  body="$(head -c 1000 "$UPLOAD_RESP_FILE")"
-  rm -f "$UPLOAD_RESP_FILE"
-  die "Box upload returned HTTP $HTTP_CODE: $body"
+  die "Box upload returned HTTP $HTTP_CODE: $(head -c 1000 "$UPLOAD_RESP_FILE")"
 fi
 
 UPLOADED_ID="$(python3 -c "import sys,json; d=json.load(sys.stdin); e=d.get('entries',[{}]); print((e[0] if e else {}).get('id') or d.get('id','unknown'))" < "$UPLOAD_RESP_FILE" 2>/dev/null || echo "unknown")"
-rm -f "$UPLOAD_RESP_FILE"
 log "Box upload $ACTION (id=$UPLOADED_ID)"
 
 # === Step 5: Prune old local timestamped backups ===
