@@ -934,12 +934,12 @@ app.get('/llm-health-ui', async (req, res) => {
           badges.push('<span class="badge badge-current">使用中</span>');
         }
         
-        return `
+        return \`
           <div class="model-row">
-            <div class="model-id">${model.id}</div>
-            ${badges.join('')}
+            <div class="model-id">\${model.id}</div>
+            \${badges.join('')}
           </div>
-        `;
+        \`;
       }).join('');
       
       panel.classList.add('show');
