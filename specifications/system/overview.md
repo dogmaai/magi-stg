@@ -84,7 +84,10 @@ PLM 起動時に BigQuery `magi_core.market_research` から最新 watchlist を
 - BigQuery: magi_core (US region)
 - Secret Manager: 12+ APIキー
 - Grafana: https://aka.grafana.net
-- ARIEL: Mac mini M4 (Tailscale: 100.114.185.1) — Intent Parser、取引判断しない
-- **TIALA: Mac mini M4 16GB Unified (Tailscale: 100.114.185.1) — TIARA の推論実行ハードウェア (port 11434)**
+- **TIALA (ハードウェア): Mac mini M4 16GB Unified、Jun 自宅、Tailscale IP 100.114.185.1**。同一ホスト上で以下のサービスが稼働:
+  - **ARIEL** (port 18789): Telegram Intent Parser、取引判断しない (OpenClaw framework)
+  - **TIARA** (port 11434): Ollama 推論 PLM (qwen2.5:14b)
+  - moomoo-bridge.py (port 11436): MooMoo 連携 (Phase 2 用)
+  - OpenClaw proxy (port 11435)
 
 注: TIALA はハードウェア名（末尾LA）、TIARA は PLM ユニット名（末尾RA）。L/R 1 文字違い、混同厳禁。

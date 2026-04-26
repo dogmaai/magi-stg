@@ -51,7 +51,7 @@
 | ユニット | 推論実行場所 |
 |---|---|
 | SOPHIA-5 / MELCHIOR-1 / ANIMA / CASPER / LILITH / ZEROEL / ORACLE / PROMETHEUS | クラウドAPI |
-| **TIARA** | **TIALA (Mac mini M4 16GB, Tailscale 100.114.185.1, port 11434)** |
+| **TIARA** | **TIALA 上で稼働 (Mac mini M4 16GB Unified, Tailscale 100.114.185.1, Ollama port 11434)** |
 
 注: TIALA はハードウェア名（末尾LA）、TIARA は PLM ユニット名（末尾RA）。L/R 1文字違いのため混同厳禁。
 
