@@ -93,6 +93,8 @@ PLM 起動時に BigQuery `magi_core.market_research` から最新 watchlist を
 
 注: TIALA はハードウェア名（末尾LA）、TIARA は PLM ユニット名（末尾RA）。L/R 1 文字違い、混同厳禁。
 
+TIALA 上のサービス/ポート/外部接続の詳細（Mermaid 図）は `specifications/system/tiala-architecture.md` を参照。
+
 ### Telegram 連携エージェントの役割分担
 
 | エージェント | 役割 | Provider / Model | フォールバック |
