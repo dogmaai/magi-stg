@@ -89,5 +89,14 @@ PLM 起動時に BigQuery `magi_core.market_research` から最新 watchlist を
   - **TIARA** (port 11434): Ollama 推論 PLM (qwen2.5:14b)
   - moomoo-bridge.py (port 11436): MooMoo 連携 (Phase 2 用)
   - OpenClaw proxy (port 11435)
+- **AKA-1（あか）**: Telegram 高速応答エージェント。`claude-3-5-haiku-20241022` を使用。`magi-sys` の Role として `config/default-roles.json` に登録。ARIEL 失敗時のフォールバック先も担当（Anthropic API に統一）。
 
 注: TIALA はハードウェア名（末尾LA）、TIARA は PLM ユニット名（末尾RA）。L/R 1 文字違い、混同厳禁。
+
+### Telegram 連携エージェントの役割分担
+
+| エージェント | 役割 | Provider / Model | フォールバック |
+|---|---|---|---|
+| ARIEL | Intent Parser / ツール呼び出し（OpenClaw、TIALA @ port 18789） | Ollama (`ariel` / qwen2.5:7b 相当) | Claude Haiku (`claude-3-5-haiku-20241022`) |
+| AKA-1（あか） | 高速 Telegram 応答・簡易照会 | Anthropic (`claude-3-5-haiku-20241022`) | Gemini (`gemini-3-flash-preview`) |
+| MAGI Monitor (`magi-moni` / `@magi_claw_bot`) | 監視通知・パフォーマンス報告・週次/日次レポート | — | — |

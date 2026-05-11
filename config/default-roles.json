@@ -43,6 +43,14 @@
           "fallback_provider": "grok",
           "fallback_model": "grok-2-latest",
           "enabled": true
+        },
+        "AKA-1": {
+          "description": "高速Telegram応答・簡易照会",
+          "provider": "anthropic",
+          "model": "claude-3-5-haiku-20241022",
+          "fallback_provider": "gemini",
+          "fallback_model": "gemini-3-flash-preview",
+          "enabled": true
         }
       }
     },
