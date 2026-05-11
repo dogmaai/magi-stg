@@ -85,11 +85,11 @@ PLM 起動時に BigQuery `magi_core.market_research` から最新 watchlist を
 - Secret Manager: 12+ APIキー
 - Grafana: https://aka.grafana.net
 - **TIALA (ハードウェア): Mac mini M4 16GB Unified、Jun 自宅、Tailscale IP 100.114.185.1**。同一ホスト上で以下のサービスが稼働:
-  - **ARIEL** (port 18789): Telegram Intent Parser、取引判断しない (OpenClaw framework)
-  - **TIARA** (port 11434): Ollama 推論 PLM (qwen2.5:14b)
+  - **TIARA** (port 11434): Ollama 推論 PLM (qwen2.5:14b)。HERMES:ORACLE / TIARA PLM Job / ARIEL（OpenClaw 経路）の 3 コンシューマーが共有
+  - **ARIEL** (port 18789): OpenClaw 経由の Intent Parser、取引判断しない。**Telegram 経路では未使用** (OpenClaw / Claude Desktop 専用)
   - moomoo-bridge.py (port 11436): MooMoo 連携 (Phase 2 用)
   - OpenClaw proxy (port 11435)
-- **AKA-1（あか）**: Telegram 高速応答エージェント。`claude-3-5-haiku-20241022` を使用。`magi-sys` の Role として `config/default-roles.json` に登録。ARIEL 失敗時のフォールバック先も担当（Anthropic API に統一）。
+- **AKA-1（あか）= Telegram の顔**: `magi-moni` の `/webhook/telegram` で非 slash メッセージを受け取り、`claude-3-5-haiku-20241022` を tool calling で呼んで BigQuery を直接照会し応答する。読み取り専用事前定義ツール: `get_today_trades`, `get_winrate_by_llm`, `get_daily_summary`, `get_l4_probation`。`magi-sys` の Role として `config/default-roles.json` にも登録（ARIEL 失敗時のフォールバック先）。
 
 注: TIALA はハードウェア名（末尾LA）、TIARA は PLM ユニット名（末尾RA）。L/R 1 文字違い、混同厳禁。
 
@@ -97,8 +97,10 @@ TIALA 上のサービス/ポート/外部接続の詳細（Mermaid 図）は `sp
 
 ### Telegram 連携エージェントの役割分担
 
-| エージェント | 役割 | Provider / Model | フォールバック |
+| エージェント | 役割 | Provider / Model | 接続経路 |
 |---|---|---|---|
-| ARIEL | Intent Parser / ツール呼び出し（OpenClaw、TIALA @ port 18789） | Ollama (`ariel` / qwen2.5:7b 相当) | Claude Haiku (`claude-3-5-haiku-20241022`) |
-| AKA-1（あか） | 高速 Telegram 応答・簡易照会 | Anthropic (`claude-3-5-haiku-20241022`) | Gemini (`gemini-3-flash-preview`) |
-| MAGI Monitor (`magi-moni` / `@magi_claw_bot`) | 監視通知・パフォーマンス報告・週次/日次レポート | — | — |
+| **AKA-1（あか）** | Telegram 自然文 Q&A / 簡易照会（tool calling で BQ 直接照会） | Anthropic (`claude-3-5-haiku-20241022`) | `magi-moni` の `/webhook/telegram` で非 slash メッセージを処理 |
+| **MAGI Monitor** (`magi-moni` / `@magi_claw_bot`) | slash コマンド・週次/日次レポート・勝率閾値通知 | — | `/webhook/telegram` の slash 分岐 + Cloud Scheduler |
+| ARIEL | Intent Parser / ツール呼び出し（**Telegram 経路では未使用**） | Ollama (`ariel` / qwen2.5:7b 相当) | OpenClaw → `magi-gateway/ask` のみ |
+
+Telegram 上では **AKA-1 が単一 LLM + tool calling で応答し、ARIEL（Intent Parser）は介さない** 設計。ARIEL は OpenClaw 経由のローカル CLI 用途として残す。選択理由は `MEMORY.md` 「設計選択の経緯」を参照。
