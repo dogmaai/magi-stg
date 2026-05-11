@@ -9,6 +9,12 @@
 TIALA は **Jun 自宅に設置された Mac mini M4 16GB Unified** で、Tailscale IP `100.114.185.1` を持つ。
 このホスト上で **4 つのサービス + 1 つのカスタム Ollama モデル群** が常駐し、`Tailscale Funnel`（`https://aka.aegean-boa.ts.net`）と `ngrok` で外部の GCP / Telegram / MooMoo に接続する。
 
+TIALA 上の Ollama は **3 つの GCP 側コンシューマー**が共有するバックエンド:
+
+1. **TIARA PLM** (Cloud Run Job `magi-core-ollama`, `qwen2.5:14b`) — 自律取引
+2. **ARIEL** (`magi-core/intent-parser.js`, model `ariel`) — Telegram Intent Parser
+3. **HERMES:ORACLE** (Cloud Run Job `magi-vix-oracle`, VIX 専門プロンプト) — 市場インテリジェンス収集
+
 ---
 
 ## 1. TIALA 内部構成（マシン内）
@@ -76,9 +82,10 @@ flowchart LR
 
     subgraph GCP["☁️ GCP (asia-northeast1 / screen-share-459802)"]
         IntentParser["magi-core / intent-parser.js<br/><i>callArielWithTools()</i>"]
-        OllamaJob["Cloud Run Job<br/><b>magi-core-ollama</b><br/>(LLM_PROVIDER=ollama,<br/>UNIT_NAME=TIARA)"]
+        OllamaJob["Cloud Run Job<br/><b>magi-core-ollama</b><br/>(UNIT_NAME=TIARA)"]
+        VixOracleJob["Cloud Run Job<br/><b>magi-vix-oracle</b><br/>(HERMES:ORACLE)"]
         MoomooProxy["Cloud Run<br/><b>magi-moomoo</b> proxy"]
-        BQ[("BigQuery<br/>magi_core")]
+        BQ[("BigQuery<br/>magi_core /<br/>magi_analytics_us")]
     end
 
     Anthropic["🤖 Anthropic API<br/>claude-3-5-haiku-20241022<br/>(= <b>AKA-1</b> fallback)"]
@@ -96,6 +103,10 @@ flowchart LR
 
     %% TIARA PLM ジョブ
     OllamaJob -- "Ollama 推論<br/>(qwen2.5:14b)" --> Funnel
+
+    %% HERMES:ORACLE ジョブ
+    VixOracleJob -- "callOracleOllama()<br/>VIX 解析 prompt" --> Funnel
+    VixOracleJob -- "解析結果書き込み<br/>(market_indicators,<br/>vix_comparison)" --> BQ
 
     %% MooMoo 経路
     MoomooProxy -- "サービスディスカバリ<br/>(BQ service_endpoints)" --> Ngrok
@@ -119,6 +130,14 @@ flowchart LR
 | Tailscale Funnel | TIALA Ollama を GCP / 外部から HTTPS で叩く | `https://aka.aegean-boa.ts.net` |
 | ngrok | MooMoo bridge を GCP から到達可能にする | 動的 URL、BQ `service_endpoints` テーブルで配信 |
 | Telegram Bot | ARIEL への問い合わせ | `@magi_claw_bot` 系 |
+
+### TIALA Ollama のコンシューマー一覧
+
+| コンシューマー | ソース | 使用モデル | スケジュール | 用途 |
+|---|---|---|---|---|
+| **TIARA PLM** | Cloud Run Job `magi-core-ollama` (`magi-core.js`) | `qwen2.5:14b` | 20:30 UTC 月-金 | 自律取引 PLM |
+| **ARIEL** | `magi-core/intent-parser.js` | `ariel` (qwen2.5:7b 系) | オンデマンド (Telegram) | Intent Parser / Tool calling |
+| **HERMES:ORACLE** | Cloud Run Job `magi-vix-oracle` (`magi-core/lib/vix.js` + `src/isabel.js`) | デフォルト Ollama モデル | 13:00 / 14:00 UTC 月-金 | VIX レジーム・Symbol VIX 解析 |
 
 ---
 
@@ -176,7 +195,31 @@ sequenceDiagram
     Job ->> BQ: thoughts / trades_active 書き込み
 ```
 
-### C. MooMoo 取引（Phase 2）
+### C. HERMES:ORACLE → TIALA Ollama → BigQuery（VIX premarket）
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Sched as Cloud Scheduler<br/>magi-vix-premarket<br/>(13:00 / 14:00 UTC)
+    participant Job as Cloud Run Job<br/>magi-vix-oracle
+    participant Funnel as Tailscale Funnel
+    participant Ollama as TIALA Ollama :11434
+    participant BQ as BigQuery
+    participant PLM as PLM セッション<br/>(読み手)
+
+    Sched ->> Job: 起動
+    Job ->> Job: getVixRegime()<br/>(VIXレジーム計算)
+    Job ->> Funnel: callOracleOllama()<br/>VIX prompt
+    Funnel ->> Ollama: forward
+    Ollama -->> Funnel: ORACLE解析
+    Funnel -->> Job: 応答
+    Job ->> BQ: market_indicators / vix_comparison書き込み
+    Note over Job,BQ: src/isabel.js calculateSymbolVix() も<br/>同様に TIALA Ollama を使って<br/>銘柄別 Symbol VIX を書き込む
+    PLM ->> BQ: getOracleVixContext()<br/>(取引セッション起動時に読み込む)
+    BQ -->> PLM: ORACLE rows
+```
+
+### D. MooMoo 取引（Phase 2）
 
 ```mermaid
 sequenceDiagram
@@ -212,6 +255,9 @@ sequenceDiagram
 | `magi-core/ariel-tools.js` | ARIEL の 6 ツール定義 |
 | `magi-core/scripts/run-tiara.sh` | TIARA PLM 起動スクリプト |
 | `magi-core/lib/secrets.js` | `OLLAMA_BASE_URL` デフォルト値 |
+| `magi-core/lib/vix.js` | `callOracleOllama()` と `handleVixOnlyMode()` (HERMES:ORACLE) |
+| `magi-core/src/hermes.js` | HERMES 機関本体 (4 サブモジュール) |
+| `magi-core/src/isabel.js` | `calculateSymbolVix()` — 銘柄別 VIXも TIALA Ollama 使用 |
 | `magi-moomoo/server.js` | MooMoo proxy、ngrok 経由で bridge に到達 |
 
 ---
@@ -224,3 +270,4 @@ sequenceDiagram
 | **TIARA** | PLM ユニット | **RA** | Ollama 上の qwen2.5:14b、自律取引 PLM |
 | **ARIEL** | エージェント | — | Telegram Intent Parser（取引判断しない） |
 | **AKA-1（あか）** | エージェント | — | Claude Haiku、Telegram 高速応答 + ARIEL fallback |
+| **HERMES:ORACLE** | HERMES サブモジュール | — | Cloud Run Job `magi-vix-oracle` から TIALA Ollama で VIX 解析 |
