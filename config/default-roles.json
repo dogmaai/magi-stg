@@ -53,51 +53,6 @@
           "enabled": true
         }
       }
-    },
-    "magi-ac": {
-      "name": "4AI Securities Analysis",
-      "roles": {
-        "Unit-B2": {
-          "description": "創造的トレンド分析",
-          "provider": "grok",
-          "model": "grok-2-latest",
-          "fallback_provider": "mistral",
-          "fallback_model": "mistral-large-latest",
-          "enabled": true
-        },
-        "Unit-M1": {
-          "description": "論理的数値分析",
-          "provider": "gemini",
-          "model": "gemini-3-flash-preview",
-          "fallback_provider": "openai",
-          "fallback_model": "gpt-4o-mini",
-          "enabled": true
-        },
-        "Unit-C3": {
-          "description": "人間的価値分析（ESG）",
-          "provider": "anthropic",
-          "model": "claude-sonnet-4-20250514",
-          "fallback_provider": "gemini",
-          "fallback_model": "gemini-3-flash-preview",
-          "enabled": true
-        },
-        "Unit-R4": {
-          "description": "実践的リスク分析",
-          "provider": "mistral",
-          "model": "mistral-large-latest",
-          "fallback_provider": "grok",
-          "fallback_model": "grok-2-latest",
-          "enabled": true
-        },
-        "ISABEL": {
-          "description": "文書解析・RAG",
-          "provider": "cohere",
-          "model": "command-r-plus",
-          "fallback_provider": null,
-          "fallback_model": null,
-          "enabled": true
-        }
-      }
     }
   },
   "available_providers": [
