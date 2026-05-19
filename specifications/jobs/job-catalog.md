@@ -44,8 +44,8 @@
 | magi-evaluator | 取引結果判定 | 毎日 10:00 | magi-core |
 | magi-vix-oracle | VIX取得・BigQuery書き込み | 13:00 / 14:00 月-金 | magi-core |
 | magi-gemini-analyzer | Geminiパターン分析 | 14:00 月-金 | magi-core |
-| magi-isabel-briefing | ISABELブリーフィング | 13:30 月-金 | magi-ac |
-| magi-isabel-l4-scheduler | L4パターン言語化 | 13:00 月-金 | magi-ac |
+| magi-isabel-briefing | ISABELブリーフィング | 13:30 月-金 | magi-core |
+| magi-isabel-l4-scheduler | L4パターン言語化 | 13:00 月-金 | magi-core |
 | magi-optuna-optimizer | Optuna最適化 | 毎週月曜 06:00 | magi-core |
 | magi-sync-embeddings | Embedding同期 | 毎日 11:00 | magi-core |
 | magi-fred-updater | 経済指標更新 | 毎日 02:00 | fred_integration |
