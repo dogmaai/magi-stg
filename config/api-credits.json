@@ -101,20 +101,6 @@
       "auto_fetch": false,
       "dashboard_url": "https://console.groq.com/settings/billing",
       "notes": "Free tier with rate limits"
-    },
-    "together": {
-      "name": "Together AI (ANIMA)",
-      "balance": null,
-      "currency": "USD",
-      "expiration": null,
-      "tier": "pay-as-you-go",
-      "status": "unknown",
-      "threshold_warning": 10.00,
-      "threshold_critical": 5.00,
-      "last_checked": null,
-      "auto_fetch": false,
-      "dashboard_url": "https://api.together.xyz/settings/billing",
-      "notes": ""
     }
   }
 }

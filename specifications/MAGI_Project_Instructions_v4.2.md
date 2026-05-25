@@ -30,7 +30,7 @@
 | magi-core-deepseek | DeepSeek | deepseek-chat | CASPER | 17:00 月-金 |
 | magi-core-qwen | Qwen | qwen-plus | QWEN | 18:00 月-金 |
 | magi-core-xai | xAI | grok-2 | BALTHASAR | 19:00 月-金 |
-| magi-core-together | Together | Llama-4-Maverick-17B | ORACLE | 19:30 月-金 |
+| ~~magi-core-together~~ | ~~Together~~ | ~~Llama-4-Maverick-17B~~ | ~~ORACLE~~ | ~~19:30 月-金~~ (廃止済) |
 
 ### Cloud Run Services
 

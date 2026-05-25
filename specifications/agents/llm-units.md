@@ -12,7 +12,7 @@
 | CASPER | DeepSeek | deepseek-chat | ACTIVE | 全LOSE（リスク管理者ペルソナ偏向） | 中 | 低 |
 | LILITH | Qwen (Alibaba) | qwen-plus | ACTIVE | 詳細だが冗長（385-439文字） | 高 | 中 |
 | ZEROEL | xAI | grok-4-1-fast | PAUSED | 構造化高品質分析 | 高 | 高 |
-| ORACLE | Together | Llama-4-Maverick-17B-128E-Instruct-FP8 | PAUSED | SELL 90%勝率、BUY不可 | 中 | 中 |
+| ~~ORACLE~~ | ~~Together~~ | ~~Llama-4-Maverick-17B-128E-Instruct-FP8~~ | 廃止済 | SELL 90%勝率、BUY不可 | 中 | 中 |
 | PROMETHEUS | OpenAI | gpt-4o-mini | JOB-ONLY | （Scheduler 未作成） | - | - |
 | TIARA | Ollama @ TIALA | qwen2.5:14b | ACTIVE | 観察中（2026-04-26 PoC開始） | 中 | 中 |
 
@@ -35,7 +35,7 @@
 | Provider | 月額 |
 |---|---|
 | Qwen (LILITH) | $1.43 |
-| Together (ORACLE) | $0.78 |
+| ~~Together (ORACLE)~~ | ~~$0.78~~ (廃止済) |
 | Groq (ANIMA) | $0.72 |
 | xAI (ZEROEL) | $0.53 |
 | DeepSeek (CASPER) | $0.35 |
@@ -50,7 +50,7 @@
 
 | ユニット | 推論実行場所 |
 |---|---|
-| SOPHIA-5 / MELCHIOR-1 / ANIMA / CASPER / LILITH / ZEROEL / ORACLE / PROMETHEUS | クラウドAPI |
+| SOPHIA-5 / MELCHIOR-1 / ANIMA / CASPER / LILITH / ZEROEL / PROMETHEUS | クラウドAPI |
 | **TIARA** | **TIALA 上で稼働 (Mac mini M4 16GB Unified, Tailscale 100.114.185.1, Ollama port 11434)** |
 
 注: TIALA はハードウェア名（末尾LA）、TIARA は PLM ユニット名（末尾RA）。L/R 1文字違いのため混同厳禁。

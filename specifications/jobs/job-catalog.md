@@ -12,7 +12,7 @@
 | magi-core-deepseek | DeepSeek | deepseek-chat | CASPER | 17:00 月-金 | ACTIVE |
 | magi-core-qwen | Qwen (Alibaba) | qwen-plus | LILITH | 18:00 月-金 | ACTIVE |
 | magi-core-xai | xAI | grok-4-1-fast | ZEROEL | 19:00 月-金 | PAUSED |
-| magi-core-together | Together | Llama-4-Maverick-17B-128E-Instruct-FP8 | ORACLE | 19:30 月-金 | PAUSED |
+| ~~magi-core-together~~ | ~~Together~~ | ~~Llama-4-Maverick-17B-128E-Instruct-FP8~~ | ~~ORACLE~~ | ~~19:30 月-金~~ | 廃止済 |
 | magi-core-openai | OpenAI | gpt-4o-mini | PROMETHEUS | (Scheduler 未作成) | JOB-ONLY |
 | magi-core-ollama | Ollama @ TIALA | qwen2.5:14b | TIARA | 20:30 月-金 | ACTIVE |
 
@@ -20,7 +20,7 @@
 
 | Scheduler 名 | 対応 Job |
 |---|---|
-| magi-scheduler-mistral / -gemini / -groq / -deepseek / -qwen / -xai / -together | 各 PLM Job (パターン: `magi-scheduler-{provider}`) |
+| magi-scheduler-mistral / -gemini / -groq / -deepseek / -qwen / -xai | 各 PLM Job (パターン: `magi-scheduler-{provider}`) |
 | **magi-core-ollama-scheduler** | magi-core-ollama (例外的命名) |
 
 ### ユニット名の改名履歴

@@ -31,7 +31,7 @@
 | magi-core-deepseek | CASPER | DeepSeek | ACTIVE |
 | magi-core-qwen | LILITH | Qwen (Alibaba) | ACTIVE |
 | magi-core-xai | ZEROEL | xAI | PAUSED |
-| magi-core-together | ORACLE | Together | PAUSED |
+| ~~magi-core-together~~ | ~~ORACLE~~ | ~~Together~~ | 廃止済 |
 | magi-core-openai | PROMETHEUS | OpenAI | JOB-ONLY |
 | magi-core-ollama | TIARA | Ollama @ TIALA | ACTIVE |
 
@@ -72,7 +72,7 @@ ARIEL は OpenClaw 経由のローカル CLI 用途として残す。
 
 ### 命名規則
 
-- **PLM ユニット名**: エヴァンゲリオン由来（BALTHASAR / MELCHIOR / CASPER / SOPHIA / MARY）+ サフィックス番号、または独自神話系（ANIMA / LILITH / ZEROEL / ORACLE / PROMETHEUS / TIARA）。
+- **PLM ユニット名**: エヴァンゲリオン由来（BALTHASAR / MELCHIOR / CASPER / SOPHIA / MARY）+ サフィックス番号、または独自神話系（ANIMA / LILITH / ZEROEL / PROMETHEUS / TIARA）。
 - **Telegram 連携**: 短く呼びやすい固有名（ARIEL / AKA-1）。
 - **ハードウェア**: 末尾 LA（TIALA = Mac mini M4 ホスト）。
 - **PLM (Ollama 上)**: 末尾 RA（TIARA = qwen2.5:14b の PLM ユニット名）。
