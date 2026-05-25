@@ -127,24 +127,7 @@
       "role": "Urgent Alert & Fast Response",
       "specialty": "緊急判断、高速応答、リアルタイムアラート",
       "response_target_ms": 500,
-      "fallback_chains": ["together", "mistral"]
-    },
-    "together": {
-      "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-      "endpoint": "https://api.together.xyz/v1/chat/completions",
-      "temperature": 0.4,
-      "max_tokens": 2048,
-      "timeout_ms": 30000,
-      "enabled": true,
-      "investment_decision": false,
-      "backup_llm": true,
-      "unit_names": {
-        "magi_sys": null,
-        "magi_ac": "ANIMA"
-      },
-      "role": "Backup & Synthesis",
-      "specialty": "フォールバック対応、追加分析、合議補助",
-      "fallback_chains": ["groq", "mistral"]
+      "fallback_chains": ["mistral"]
     }
   },
   "ai_teams": {
@@ -152,7 +135,7 @@
     "document_analysis": ["cohere"],
     "qa_integration": ["openai"],
     "urgent_alert": ["groq"],
-    "backup": ["together"]
+    "backup": []
   },
   "system_config": {
     "default_timeout_ms": 30000,

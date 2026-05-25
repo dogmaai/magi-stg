@@ -544,15 +544,6 @@ const LLM_MODELS = {
       { id: 'deepseek-reasoner', status: 'active' }
     ]
   },
-  together: {
-    unit: 'ORACLE',
-    active_model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
-    available_models: [
-      { id: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', status: 'active' },
-      { id: 'meta-llama/Llama-3.1-8B-Instruct-Turbo', status: 'active' },
-      { id: 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8', status: 'deprecated' }
-    ]
-  },
   qwen: {
     unit: 'MINERVA',
     active_model: 'qwen-plus',
@@ -1146,11 +1137,6 @@ app.get('/public/llm-models', (req, res) => {
         "unit": "CASPER",
         "active_model": "deepseek-chat",
         "available_models": ["deepseek-chat", "deepseek-reasoner"]
-      },
-      "together": {
-        "unit": "ORACLE",
-        "active_model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-        "available_models": ["meta-llama/Llama-3.3-70B-Instruct-Turbo", "meta-llama/Llama-3.1-8B-Instruct-Turbo"]
       },
       "qwen": {
         "unit": "MINERVA",
