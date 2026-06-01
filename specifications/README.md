@@ -13,7 +13,7 @@ AIエージェント・開発者はここから読み始めてください。
 ### system/ - システム仕様
 - [overview.md](system/overview.md) - システム全体概要・アーキテクチャ
 - [guard-system.md](system/guard-system.md) - 7層ガードシステム詳細
-- [data-schema.md](system/data-schema.md) - BigQueryテーブル定義
+- [data-schema.md](system/data-schema.md) - ECHIDNA（BigQuery データ基盤）テーブル定義
 
 ### agents/ - AI開発者向け
 - [AGENTS.md](agents/AGENTS.md) - AI開発エージェント向けガイド（Devin/Claude Code用）

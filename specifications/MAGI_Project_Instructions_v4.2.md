@@ -99,7 +99,7 @@ score = 0.309 * directionWR + 0.369 * symbolWR + 0.173 * confidence + 0.149 * re
 
 - GCPプロジェクト: screen-share-459802
 - リージョン: asia-northeast1
-- BigQuery: magi_core（USリージョン）
+- ECHIDNA（BigQuery データ基盤）: magi_core（USリージョン）他
 - 取引: Alpaca Paper Trading（$100k仮想資金）
 - 分析: Cohere（ISABEL、embed/rerank）
 - 通知: Telegram
