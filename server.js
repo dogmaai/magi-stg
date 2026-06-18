@@ -1066,27 +1066,17 @@ app.delete('/api/task', (req, res) => {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Constitution API（全AI共有の憲法）
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Constitution API — DEPRECATED
+// The single source of truth is now BigQuery `magi_core.constitution`
+// (synced from magi-core/lib/constitution.js v3.0). Static file removed.
 app.get('/public/constitution', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  try {
-    const constitutionPath = path.join(SPEC_DIR, 'constitution.md');
-    const exists = fs.existsSync(constitutionPath);
-    if (!exists) {
-      return res.status(404).json({ error: 'Constitution not found' });
-    }
-    const constitution = fs.readFileSync(constitutionPath, 'utf-8');
-    res.json({
-      success: true,
-      version: '1.0',
-      north_star: 'MAGIは市場情報を安全に取り扱い、複数AIの知性を統合して、透明性のある投資判断と執行を行うシステムである',
-      content: constitution,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  res.status(410).json({
+    error: 'DEPRECATED: Constitution endpoint removed.',
+    migration: 'Use BigQuery `magi_core.constitution` (WHERE deprecated_at IS NULL) as the single source of truth. See magi-core/lib/constitution.js.',
+    version: '3.0',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // LLM設定API（8プロバイダー対応）
