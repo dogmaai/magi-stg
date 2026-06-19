@@ -94,7 +94,7 @@ PLM の事前情報収集を統合化する Cloud Run 製ゲートウェイ。`m
 | **HERMES:BRAVE** | Brave Search + Gemini gemini-3-flash-preview スコアリング | `magi_core.pre_trade_intelligence` | PLM 起動時 / Cloud Scheduler |
 | **HERMES:ALPHA_VANTAGE** | Alpha Vantage NEWS_SENTIMENT API（リアルタイム） | — (直接 PLM プロンプト注入) | オンデマンド |
 | **HERMES:MARKET_RESEARCH** | `magi_core.market_research` テーブル（読み取り） | — (リーダー) | PLM 起動時 |
-| **HERMES:ORACLE** | Ollama @ TIALA を Tailscale Funnel 経由で呼び出し | `magi_core.market_indicators`, `magi_analytics_us.vix_comparison` | Cloud Run Job `magi-vix-oracle` (Cloud Scheduler `magi-vix-premarket`, 13:00 / 14:00 UTC 月-金) |
+| **HERMES:ORACLE** | Ollama @ TIALA を Tailscale Funnel 経由で呼び出し | `magi_core.market_indicators`, `magi_analytics_us.vix_comparison` | Cloud Run Job `magi-vix-oracle` (Cloud Scheduler `magi-vix-premarket`, 現状 UTC 固定 13:00 / 14:00 月-金 premarket。ET 換算は DST で変動: EDT 期 09:00/10:00 ET・EST 期 08:00/09:00 ET) |
 
 書き手と読み手の関係:
 
@@ -129,7 +129,7 @@ investment_decision: false
 実行場所: TIALA (Mac mini M4 16GB Unified) 上の Ollama (port 11434)
 エンドポイント: lib/vix.js callOracleOllama() → OLLAMA_BASE_URL (Tailscale Funnel)
 投入経路: Cloud Run Job magi-vix-oracle (Cloud Scheduler magi-vix-premarket)
-起動時刻: 13:00 / 14:00 UTC 月-金（premarket）
+起動時刻: 現状 UTC 固定 13:00 / 14:00 月-金（premarket）。ET 換算は DST で変動: EDT 期 09:00/10:00 ET・EST 期 08:00/09:00 ET。時刻基準は `America/New_York`(NYSE 09:30-16:00 ET)
 読み手: PLM セッションが getOracleVixContext() で読み込み
 investment_decision: false
 ```
